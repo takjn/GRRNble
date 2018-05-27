@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -18,10 +19,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
 
+import java.nio.ByteBuffer;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -33,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final UUID UUID_SERVICE_PRIVATE         = UUID.fromString( "3B382559-223F-48CA-81B4-E151598F661B" );
     private static final UUID UUID_CHARACTERISTIC_PRIVATE1 = UUID.fromString( "DB5445C4-4A70-4422-87AF-81D35456BEB5" );
     private static final UUID UUID_CHARACTERISTIC_PRIVATE2 = UUID.fromString( "DB5445C4-4A70-4422-87AF-81D35456BEB5" );
+    // for Notification
+    private static final UUID UUID_NOTIFY                  = UUID.fromString( "DB5445C4-4A70-4422-87AF-81D35456BEB5" );
 
     private static final int REQUEST_ENABLEBLUETOOTH = 1;
     private static final int REQUEST_CONNECTDEVICE = 2;
@@ -46,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mButton_Disconnect;    // 切断ボタン
     private Button mButton_ReadChara1;    // キャラクタリスティック１の読み込みボタン
     private Button mButton_ReadChara2;    // キャラクタリスティック２の読み込みボタン
+    private CheckBox mCheckBox_NotifyChara1;    // キャラクタリスティック１の変更通知ON/OFFチェックボックス
 
     // BluetoothGattコールバックオブジェクト
     private final BluetoothGattCallback mGattcallback = new BluetoothGattCallback()
@@ -85,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         // 読み込みボタンを無効にする（通知チェックボックスはチェック状態を維持。通知ONで切断した場合、再接続時に通知は再開するので）
                         mButton_ReadChara1.setEnabled( false );
                         mButton_ReadChara2.setEnabled( false );
+                        mCheckBox_NotifyChara1.setEnabled( false );
                     }
                 } );
                 return;
@@ -117,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             // GUIアイテムの有効無効の設定
                             mButton_ReadChara1.setEnabled( true );
                             mButton_ReadChara2.setEnabled( true );
+                            mCheckBox_NotifyChara1.setEnabled( true );
                         }
                     } );
                     continue;
@@ -133,30 +141,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return;
             }
             // キャラクタリスティックごとに個別の処理
-//            if( UUID_CHARACTERISTIC_PRIVATE1.equals( characteristic.getUuid() ) )
-//            {    // キャラクタリスティック１：データサイズは、2バイト（数値を想定。0～65,535）
-//                byte[]       byteChara = characteristic.getValue();
-//                ByteBuffer   bb        = ByteBuffer.wrap( byteChara );
-//                final String strChara  = String.valueOf( bb.getShort() );
-//                runOnUiThread( new Runnable()
-//                {
-//                    public void run()
-//                    {
-//                        // GUIアイテムへの反映
-//                        ( (TextView)findViewById( R.id.textview_readchara1 ) ).setText( strChara );
-//                    }
-//                } );
-//                return;
-//            }
             if( UUID_CHARACTERISTIC_PRIVATE1.equals( characteristic.getUuid() ) )
-            {    // キャラクタリスティック１：データサイズは、8バイト（文字列を想定。半角文字8文字）
-                final String strChara = characteristic.getStringValue( 0 );
+            {    // キャラクタリスティック１：データサイズは、2バイト（数値を想定。0～65,535）
+                byte[]       byteChara = characteristic.getValue();
+                ByteBuffer bb        = ByteBuffer.wrap( byteChara );
+                final String strChara  = String.valueOf( bb.getShort() );
                 runOnUiThread( new Runnable()
                 {
                     public void run()
                     {
                         // GUIアイテムへの反映
-                        ( (TextView)findViewById( R.id.textview_readchara2 ) ).setText( strChara );
+                        ( (TextView)findViewById( R.id.textview_readchara1 ) ).setText( strChara );
                     }
                 } );
                 return;
@@ -170,6 +165,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     {
                         // GUIアイテムへの反映
                         ( (TextView)findViewById( R.id.textview_readchara2 ) ).setText( strChara );
+                    }
+                } );
+                return;
+            }
+        }
+
+        // キャラクタリスティック変更が通知されたときの処理
+        @Override
+        public void onCharacteristicChanged( BluetoothGatt gatt, BluetoothGattCharacteristic characteristic )
+        {
+            // キャラクタリスティックごとに個別の処理
+            if( UUID_CHARACTERISTIC_PRIVATE1.equals( characteristic.getUuid() ) )
+            {    // キャラクタリスティック１：データサイズは、2バイト（数値を想定。0～65,535）
+                byte[]       byteChara = characteristic.getValue();
+                ByteBuffer   bb        = ByteBuffer.wrap( byteChara );
+                final String strChara  = String.valueOf( bb.getShort() );
+                runOnUiThread( new Runnable()
+                {
+                    public void run()
+                    {
+                        // GUIアイテムへの反映
+                        ( (TextView)findViewById( R.id.textview_notifychara1 ) ).setText( strChara );
                     }
                 } );
                 return;
@@ -193,6 +210,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButton_ReadChara1.setOnClickListener( this );
         mButton_ReadChara2 = (Button)findViewById( R.id.button_readchara2 );
         mButton_ReadChara2.setOnClickListener( this );
+        mCheckBox_NotifyChara1 = (CheckBox)findViewById( R.id.checkbox_notifychara1 );
+        mCheckBox_NotifyChara1.setOnClickListener( this );
 
         // Check if system has BLE feature
         if( !getPackageManager().hasSystemFeature( PackageManager.FEATURE_BLUETOOTH_LE ) ) {
@@ -224,6 +243,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButton_Disconnect.setEnabled( false );
         mButton_ReadChara1.setEnabled( false );
         mButton_ReadChara2.setEnabled( false );
+        mCheckBox_NotifyChara1.setChecked( false );
+        mCheckBox_NotifyChara1.setEnabled( false );
 
         // デバイスアドレスが空でなければ、接続ボタンを有効にする。
         if( !mDeviceAddress.equals( "" ) ) {
@@ -289,6 +310,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ( (TextView)findViewById( R.id.textview_deviceaddress ) ).setText( mDeviceAddress );
                 ( (TextView)findViewById( R.id.textview_readchara1 ) ).setText( "" );
                 ( (TextView)findViewById( R.id.textview_readchara2 ) ).setText( "" );
+                ( (TextView)findViewById( R.id.textview_notifychara1 ) ).setText( "" );
                 break;
         }
         super.onActivityResult( requestCode, resultCode, data );
@@ -335,6 +357,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             readCharacteristic( UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2 );
             return;
         }
+        if( mCheckBox_NotifyChara1.getId() == v.getId() )
+        {
+            setCharacteristicNotification( UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1, mCheckBox_NotifyChara1.isChecked() );
+            return;
+        }
     }
 
     // 接続
@@ -374,6 +401,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButton_Disconnect.setEnabled( false );
         mButton_ReadChara1.setEnabled( false );
         mButton_ReadChara2.setEnabled( false );
+        mCheckBox_NotifyChara1.setChecked( false );
+        mCheckBox_NotifyChara1.setEnabled( false );
     }
 
     // キャラクタリスティックの読み込み
@@ -387,4 +416,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBluetoothGatt.readCharacteristic( blechar );
     }
 
+    // キャラクタリスティック通知の設定
+    private void setCharacteristicNotification( UUID uuid_service, UUID uuid_characteristic, boolean enable )
+    {
+        if( null == mBluetoothGatt )
+        {
+            return;
+        }
+        BluetoothGattCharacteristic blechar = mBluetoothGatt.getService( uuid_service ).getCharacteristic( uuid_characteristic );
+        mBluetoothGatt.setCharacteristicNotification( blechar, enable );
+        BluetoothGattDescriptor descriptor = blechar.getDescriptor( UUID_NOTIFY );
+        descriptor.setValue( BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE );
+        mBluetoothGatt.writeDescriptor( descriptor );
+    }
 }
