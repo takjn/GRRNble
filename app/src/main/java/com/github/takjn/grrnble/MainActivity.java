@@ -1,6 +1,7 @@
 package com.github.takjn.grrnble;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -23,6 +24,11 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
+
+import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.provider.Settings;
+import android.text.TextUtils;
 
 import java.nio.ByteBuffer;
 import java.util.UUID;
@@ -54,6 +60,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private CheckBox mCheckBox_NotifyChara1;    // キャラクタリスティック１の変更通知ON/OFFチェックボックス
     private Button   mButton_WriteHello;        // キャラクタリスティック２への「Hello」書き込みボタン
     private Button   mButton_WriteWorld;        // キャラクタリスティック２への「World」書き込みボタン
+
+
+    private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
+    private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
+    private AlertDialog enableNotificationListenerAlertDialog;
 
     // BluetoothGattコールバックオブジェクト
     private final BluetoothGattCallback mGattcallback = new BluetoothGattCallback()
@@ -248,6 +259,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButton_WriteWorld = (Button)findViewById( R.id.button_writeworld );
         mButton_WriteWorld.setOnClickListener( this );
 
+        // https://github.com/Chagall/notification-listener-service-example/blob/master/app/src/main/java/com/github/chagall/notificationlistenerexample/MainActivity.java
+        // If the user did not turn the notification listener service on we prompt him to do so
+        if(!isNotificationServiceEnabled()){
+            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+            enableNotificationListenerAlertDialog.show();
+        }
+
         // Check if system has BLE feature
         if( !getPackageManager().hasSystemFeature( PackageManager.FEATURE_BLUETOOTH_LE ) ) {
             Toast.makeText( this, R.string.ble_is_not_supported, Toast.LENGTH_SHORT ).show();
@@ -430,6 +448,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 接続
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice( mDeviceAddress );
         mBluetoothGatt = device.connectGatt( this, false, mGattcallback );
+        NotificationService.mBluetoothGatt = mBluetoothGatt;
     }
 
     // 切断
@@ -493,6 +512,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BluetoothGattCharacteristic blechar = mBluetoothGatt.getService( uuid_service ).getCharacteristic( uuid_characteristic );
         blechar.setValue( string );
         mBluetoothGatt.writeCharacteristic( blechar );
+    }
+
+    /**
+     * Is Notification Service Enabled.
+     * Verifies if the notification listener service is enabled.
+     * Got it from: https://github.com/kpbird/NotificationListenerService-Example/blob/master/NLSExample/src/main/java/com/kpbird/nlsexample/NLService.java
+     * @return True if eanbled, false otherwise.
+     */
+    private boolean isNotificationServiceEnabled(){
+        String pkgName = getPackageName();
+        final String flat = Settings.Secure.getString(getContentResolver(),
+                ENABLED_NOTIFICATION_LISTENERS);
+        if (!TextUtils.isEmpty(flat)) {
+            final String[] names = flat.split(":");
+            for (int i = 0; i < names.length; i++) {
+                final ComponentName cn = ComponentName.unflattenFromString(names[i]);
+                if (cn != null) {
+                    if (TextUtils.equals(pkgName, cn.getPackageName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Build Notification Listener Alert Dialog.
+     * Builds the alert dialog that pops up if the user has not turned
+     * the Notification Listener Service on yet.
+     * @return An alert dialog which leads to the notification enabling screen
+     */
+    private AlertDialog buildNotificationServiceAlertDialog(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.notification_listener_service);
+        alertDialogBuilder.setMessage(R.string.notification_listener_service_explanation);
+        alertDialogBuilder.setPositiveButton(R.string.yes,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        startActivity(new Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS));
+                    }
+                });
+        alertDialogBuilder.setNegativeButton(R.string.no,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // If you choose to not enable the notification listener
+                        // the app. will not work as expected
+                    }
+                });
+        return(alertDialogBuilder.create());
     }
 
 }
