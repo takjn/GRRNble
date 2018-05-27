@@ -2,7 +2,24 @@
     <string name="app_name">GRRNble</string>
 
     <!-- MainActivity -->
+    <!-- Toast -->
     <string name="ble_is_not_supported">BLE is not supported</string>
     <string name="bluetooth_is_not_supported">Bluetooth is not supported.</string>
     <string name="bluetooth_is_not_working">Bluetooth is not working.</string>
+
+    <!-- Menu -->
+    <string name="search">Search</string>
+
+    <!-- Label -->
+    <string name="device_name">Device Name : </string>
+    <string name="device_address">Device Address : </string>
+
+    <!-- DeviceListActivity -->
+    <!-- Toast -->
+    <string name="unknown_device">Unknown device</string>
+
+    <!-- Menu -->
+    <string name="scan">Scan</string>
+    <string name="stop">Stop</string>
+
 </resources>
