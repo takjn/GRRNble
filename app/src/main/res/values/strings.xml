@@ -13,6 +13,10 @@
     <!-- Label -->
     <string name="device_name">Device Name : </string>
     <string name="device_address">Device Address : </string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="chara1">Chara1 : </string>
+    <string name="chara2">Chara2 : </string>
 
     <!-- DeviceListActivity -->
     <!-- Toast -->
