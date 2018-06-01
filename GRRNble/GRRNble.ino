@@ -4,12 +4,14 @@
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
 
+#define DEBUG 1
+
 // setting for SSD1306
 SSD1306AsciiWire oled;
 #define I2C_ADDRESS 0x3C
 
 // settings for I/O pins
-#define BUZZER_PIN      10          // pin for buzzer
+#define BUZZER_PIN      5           // pin for buzzer
 #define KEY_PREV_PIN    4           // pin for previous button
 #define KEY_SELECT_PIN  3           // pin for select button
 #define KEY_NEXT_PIN    2           // pin for next button
@@ -28,7 +30,8 @@ int display_contrast = 3;
 const unsigned long DELAY_SLEEPS[4] = {0, 5000, 10000, 15000};  // sleep (millisec, 0=always on)
 int delay_sleep = 1;
 unsigned long int tick_counter = 0;
-boolean display_power = false;
+boolean wake_flag = false;
+boolean is_active = true;
 
 // variables for watch
 RTC_TIMETYPE datetime = {15, 12, 31, 2, 23, 59, 30};
@@ -46,28 +49,11 @@ uint8_t mode_current = MODE_TIME;
 #define KEY_NEXT 2
 #define KEY_SELECT 3
 
-void sleep() {
-  oled.ssd1306WriteCmd(0x0ae); // display off
-  display_power = false;
-  
-  setPowerManagementMode(PM_STOP_MODE);
-  delay(0xffffffff); // into stop mode
-}
-
-void resume() {
-  tick_counter = 0;
-  voltage = getVoltage();
-}
-
-void tick_handler(unsigned long u32ms)
-{
+void tick_handler(unsigned long u32ms) {
   tick_counter++;
 }
 
 void setup() {
-//  pinMode(24, OUTPUT); //blue led
-//  digitalWrite(24, HIGH);
-  
   // initialize RTC
   rtc_init();
   SUBCUD.subcud = 0xB8;  // http://japan.renesasrulz.com/gr_user_forum_japanese/f/gr-kurumi/631/gr-kurumi-rtc
@@ -89,33 +75,76 @@ void setup() {
   pinMode(KEY_PREV_PIN, INPUT_PULLUP);
   pinMode(KEY_SELECT_PIN, INPUT_PULLUP);
   pinMode(KEY_NEXT_PIN, INPUT_PULLUP);
-  attachInterrupt(0, resume, FALLING);
   attachIntervalTimerHandler(tick_handler);
+  
+  // setup for RN4020
+#ifdef DEBUG
+  Serial.begin(115200);
+#endif
+  Serial2.begin(2400);  // SB,0
 
-  sleep();
+//  setPowerManagementMode(PM_STOP_MODE);
 }
 
-void loop() {
-  // turn display on if off
-  if (!display_power) {
-    oled.ssd1306WriteCmd(0x0af); // display on
-    display_power = true;
-  }
+String last_command = "";
+String command = "";
 
+void loop() {
+  // get command from BLE module  
+  while(Serial2.available() > 0){
+    char c = Serial2.read();
+
+    if (c == '\n') {
+      if (last_command != command) {
+        last_command = command;
+
+        // wake up
+        if (!is_active) {
+          wake_flag = true;
+        }
+
+#ifdef DEBUG
+        Serial.println(command);
+        Serial.flush();
+#endif
+        command = "";
+      }
+    }
+    else {
+      command += c;
+    }
+  }
+    
   // read key
   unsigned char key = key_read();
-  if (mode_current == MODE_TIME) {
-    drawWatch(key);
-  } else if (mode_current == MODE_MENU) {
-    drawMenu(key);
-  } else if (mode_current == MODE_SETTIME) {
-    drawSetTime(key);
-  }
 
-  // sleep if idle
-  if (delay_sleep > 0 & tick_counter > DELAY_SLEEPS[delay_sleep]) {
-    sleep();
+  // turn display on if the display is off
+  if (wake_flag == true) {
+    oled.ssd1306WriteCmd(0x0af); // display on
+    tick_counter = 0;
+    wake_flag = false;
+    is_active = true;
   }
   
-  delay(50);
+  if (is_active) {
+    // draw screen if the display is on
+    if (mode_current == MODE_TIME) {
+      drawWatch(key);
+    } else if (mode_current == MODE_MENU) {
+      drawMenu(key);
+    } else if (mode_current == MODE_SETTIME) {
+      drawSetTime(key);
+    }
+    
+    // sleep if idle
+    if(delay_sleep > 0 && tick_counter > DELAY_SLEEPS[delay_sleep]) {
+      oled.ssd1306WriteCmd(0x0ae); // display off
+      is_active = false;
+    }
+  }
+
+  // delay
+  for(int i=0;i<100;i++) {
+    _HALT();
+  }
 }

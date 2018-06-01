@@ -11,6 +11,7 @@ RN4020をシリアルケーブルで接続し、以下のコマンドを実行�
 ```
 SF,2            // Factory reset
 SN,GRRNble      // Set name
+SB,0            // Set 2400bps
 
 SS,C0000001     // Enable device information, battery, private service
 SR,24002000     // Set the device as periferal (Auto Advertise, No Direct Advertisement)
