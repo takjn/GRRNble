@@ -33,9 +33,12 @@ unsigned long int tick_counter = 0;
 boolean wake_flag = false;
 boolean is_active = true;
 
+// settings for voltage checker
+#define MAX_VOLTAGE 3.3
+int voltage = 0;
+
 // variables for watch
 RTC_TIMETYPE datetime = {15, 12, 31, 2, 23, 59, 30};
-float voltage = 0;
 
 // mode
 #define MODE_TIME 0        // Watch
@@ -99,7 +102,7 @@ void loop() {
         last_command = command;
 
         // wake up
-        if (!is_active) {
+        if (!is_active && !command.startsWith("AOK")) {
           wake_flag = true;
         }
 
@@ -124,6 +127,7 @@ void loop() {
     tick_counter = 0;
     wake_flag = false;
     is_active = true;
+    voltage = getVoltage();
   }
   
   if (is_active) {

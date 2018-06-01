@@ -44,28 +44,27 @@ void printWithZero(int v) {
   oled.print(v);
 }
 
-static float getVoltage() {
-  float ret = 0.0;
+static int getVoltage() {
+  float v = 0.0;
+  int ret = 0;
 
   digitalWrite(VOLTAGE_OUT_PIN, 1);
   
   // 2:1で抵抗分圧した回路を前提に、 RL78/G13の内部基準電圧(1.45V)でA/Dを実施。
   int voltage = analogRead(VOLTAGE_CHK_PIN);
-  ret = ((float)voltage/1023)*1.45/0.333333;
+  v = ((float)voltage/1023)*1.45/0.333333;
 
   digitalWrite(VOLTAGE_OUT_PIN, 0);
 
-////  voltage = getVoltage();
-//  int v = (int)(voltage/3.0*100);
-//  if (v > 100)
-//  {
-//    v=100;
-//  }
-////  String s = "SHW,001E," + String(v, HEX); 
-////  Serial1.println(s);
-////  Serial1.flush();
+  ret = (int)(voltage/MAX_VOLTAGE*100);
+  if (ret > 100)
+  {
+    ret = 100;
+  }
   
-
+  String s = "SHW,001E," + String(ret, HEX); 
+  Serial2.println(s);
+  Serial2.flush();
 
   return ret;
 }
