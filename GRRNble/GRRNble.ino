@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <RTC.h>
 #include <Wire.h>
+#include <stdlib.h>
+
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
 
@@ -28,7 +30,7 @@ int display_contrast = 3;
 
 // settings for power saving
 const unsigned long DELAY_SLEEPS[4] = {0, 5000, 10000, 15000};  // sleep (millisec, 0=always on)
-int delay_sleep = 1;
+int delay_sleep = 0;
 unsigned long int tick_counter = 0;
 boolean wake_flag = false;
 boolean is_active = true;
@@ -51,6 +53,11 @@ uint8_t mode_current = MODE_TIME;
 #define KEY_PREV 1
 #define KEY_NEXT 2
 #define KEY_SELECT 3
+
+// Notification handler
+String last_command = "";
+String command = "";
+boolean has_notification = false;
 
 void tick_handler(unsigned long u32ms) {
   tick_counter++;
@@ -89,9 +96,6 @@ void setup() {
 //  setPowerManagementMode(PM_STOP_MODE);
 }
 
-String last_command = "";
-String command = "";
-
 void loop() {
   // get command from BLE module  
   while(Serial2.available() > 0){
@@ -110,6 +114,8 @@ void loop() {
         Serial.println(command);
         Serial.flush();
 #endif
+
+        has_notification = true;
         command = "";
       }
     }
@@ -138,6 +144,53 @@ void loop() {
       drawMenu(key);
     } else if (mode_current == MODE_SETTIME) {
       drawSetTime(key);
+    }
+    
+    // notification handler
+    if (has_notification) {
+      if (last_command.startsWith("WV,001B,")) {
+        String s = last_command.substring(8);
+        s = s.substring(0,s.length() - 2);
+        
+        String str = "";
+        for (int i=0; i<s.length(); i=i+2) {
+          String tmp = "0x";
+          tmp += s.charAt(i);
+          tmp += s.charAt(i + 1);
+          Serial.println(tmp);
+          
+          char buf[5];
+          tmp.toCharArray(buf, 5);
+          Serial.println(buf);
+
+          long t = strtol(buf, NULL, 16);
+          Serial.println(t);
+          char chr = (char)t;
+          Serial.println(chr);
+
+          str += chr;
+        }
+        
+        // draw notification
+        oled.setCursor(0, 3);
+        oled.set2X();
+        oled.clearToEOL();
+        oled.print(str);
+        beep();
+        delay(100);
+        beep();
+        delay(100);
+        beep();
+        delay(5000);
+        oled.setCursor(0, 3);
+        oled.clearToEOL();
+
+#ifdef DEBUG
+        Serial.println(s);
+#endif
+      }
+      
+      has_notification = false;
     }
     
     // sleep if idle
