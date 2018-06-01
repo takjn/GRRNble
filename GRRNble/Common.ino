@@ -56,7 +56,7 @@ static int getVoltage() {
 
   digitalWrite(VOLTAGE_OUT_PIN, 0);
 
-  ret = (int)(voltage/MAX_VOLTAGE*100);
+  ret = (int)(v/MAX_VOLTAGE*100);
   if (ret > 99)
   {
     ret = 99;
