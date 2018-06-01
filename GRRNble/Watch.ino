@@ -43,7 +43,7 @@ void drawWatch(unsigned char key) {
   oled.write(132);
   oled.write('C');
   
-  oled.setCursor(87, 7);
+  oled.setCursor(97, 7);
   oled.print(voltage);
   oled.write('%');
 }

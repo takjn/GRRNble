@@ -57,9 +57,9 @@ static int getVoltage() {
   digitalWrite(VOLTAGE_OUT_PIN, 0);
 
   ret = (int)(voltage/MAX_VOLTAGE*100);
-  if (ret > 100)
+  if (ret > 99)
   {
-    ret = 100;
+    ret = 99;
   }
   
   String s = "SHW,001E," + String(ret, HEX); 
