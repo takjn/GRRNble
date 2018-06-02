@@ -1,6 +1,36 @@
+String last_command = "";
+String command = "";
 String last_nofication = "";
 
-void drawNotification(unsigned char key, String value) {
+void checkBLE() {
+  while(Serial1.available() > 0){
+    char c = Serial1.read();
+
+    if (c == '\n') {
+      if (last_command != command) {
+        last_command = command;
+
+        // wake up
+        if (!is_active && !command.startsWith("AOK")) {
+          wake_flag = true;
+        }
+
+#ifdef DEBUG
+        Serial.println(command);
+        Serial.flush();
+#endif
+
+        has_notification = true;
+        command = "";
+      }
+    }
+    else {
+      command += c;
+    }
+  }
+}
+
+void drawNotification(unsigned char key) {
   if (key == KEY_SELECT && is_active) {
     has_notification = false;
     last_nofication = "";
@@ -20,8 +50,8 @@ void drawNotification(unsigned char key, String value) {
   printWithZero(datetime.second);
   oled.clearToEOL();
   
-  if (value.startsWith("WV,001B,")) {
-    String message = decodeValue(value);
+  if (last_command.startsWith("WV,001B,")) {
+    String message = decodeValue(last_command);
     String title = "";
     String body = "";
     int sp = message.indexOf(",");
@@ -35,7 +65,7 @@ void drawNotification(unsigned char key, String value) {
 
     oled.set1X();
     oled.setCursor(0, 0);
-    oled.print("Notification");
+    oled.print("Incoming");
     oled.clearToEOL();
   
     // draw notification
@@ -59,7 +89,7 @@ void drawNotification(unsigned char key, String value) {
     }
 
 #ifdef DEBUG
-    Serial.println(value);
+    Serial.println(last_command);
 #endif
   }
 }

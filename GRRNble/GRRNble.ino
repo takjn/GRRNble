@@ -13,7 +13,7 @@ SSD1306AsciiWire oled;
 #define I2C_ADDRESS 0x3C
 
 // settings for I/O pins
-#define BUZZER_PIN      5           // pin for buzzer
+#define BUZZER_PIN      10          // pin for buzzer
 #define KEY_PREV_PIN    4           // pin for previous button
 #define KEY_SELECT_PIN  3           // pin for select button
 #define KEY_NEXT_PIN    2           // pin for next button
@@ -55,8 +55,6 @@ uint8_t mode_current = MODE_TIME;
 #define KEY_SELECT 3
 
 // Notification handler
-String last_command = "";
-String command = "";
 boolean has_notification = false;
 
 void tick_handler(unsigned long u32ms) {
@@ -91,7 +89,7 @@ void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
 #endif
-  Serial2.begin(2400);  // SB,0
+  Serial1.begin(2400);
 
   voltage = getVoltage();
 //  setPowerManagementMode(PM_STOP_MODE);
@@ -99,31 +97,7 @@ void setup() {
 
 void loop() {
   // get command from BLE module  
-  while(Serial2.available() > 0){
-    char c = Serial2.read();
-
-    if (c == '\n') {
-      if (last_command != command) {
-        last_command = command;
-
-        // wake up
-        if (!is_active && !command.startsWith("AOK")) {
-          wake_flag = true;
-        }
-
-#ifdef DEBUG
-        Serial.println(command);
-        Serial.flush();
-#endif
-
-        has_notification = true;
-        command = "";
-      }
-    }
-    else {
-      command += c;
-    }
-  }
+  checkBLE();
     
   // read key
   unsigned char key = key_read();
@@ -140,7 +114,7 @@ void loop() {
   if (is_active) {
     // draw screen if the display is on
     if (has_notification) {
-      drawNotification(key, last_command);
+      drawNotification(key);
     } else if (mode_current == MODE_TIME) {
       drawWatch(key);
     } else if (mode_current == MODE_MENU) {
