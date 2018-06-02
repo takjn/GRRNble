@@ -30,7 +30,7 @@ int display_contrast = 3;
 
 // settings for power saving
 const unsigned long DELAY_SLEEPS[4] = {0, 5000, 10000, 15000};  // sleep (millisec, 0=always on)
-int delay_sleep = 0;
+int delay_sleep = 1;
 unsigned long int tick_counter = 0;
 boolean wake_flag = false;
 boolean is_active = true;
@@ -93,6 +93,7 @@ void setup() {
 #endif
   Serial2.begin(2400);  // SB,0
 
+  voltage = getVoltage();
 //  setPowerManagementMode(PM_STOP_MODE);
 }
 
@@ -130,67 +131,22 @@ void loop() {
   // turn display on if the display is off
   if (wake_flag == true) {
     oled.ssd1306WriteCmd(0x0af); // display on
-    tick_counter = 0;
     wake_flag = false;
     is_active = true;
+    tick_counter = 0;
     voltage = getVoltage();
   }
   
   if (is_active) {
     // draw screen if the display is on
-    if (mode_current == MODE_TIME) {
+    if (has_notification) {
+      drawNotification(key, last_command);
+    } else if (mode_current == MODE_TIME) {
       drawWatch(key);
     } else if (mode_current == MODE_MENU) {
       drawMenu(key);
     } else if (mode_current == MODE_SETTIME) {
       drawSetTime(key);
-    }
-    
-    // notification handler
-    if (has_notification) {
-      if (last_command.startsWith("WV,001B,")) {
-        String s = last_command.substring(8);
-        s = s.substring(0,s.length() - 2);
-        
-        String str = "";
-        for (int i=0; i<s.length(); i=i+2) {
-          String tmp = "0x";
-          tmp += s.charAt(i);
-          tmp += s.charAt(i + 1);
-          Serial.println(tmp);
-          
-          char buf[5];
-          tmp.toCharArray(buf, 5);
-          Serial.println(buf);
-
-          long t = strtol(buf, NULL, 16);
-          Serial.println(t);
-          char chr = (char)t;
-          Serial.println(chr);
-
-          str += chr;
-        }
-        
-        // draw notification
-        oled.setCursor(0, 3);
-        oled.set2X();
-        oled.clearToEOL();
-        oled.print(str);
-        beep();
-        delay(100);
-        beep();
-        delay(100);
-        beep();
-        delay(5000);
-        oled.setCursor(0, 3);
-        oled.clearToEOL();
-
-#ifdef DEBUG
-        Serial.println(s);
-#endif
-      }
-      
-      has_notification = false;
     }
     
     // sleep if idle

@@ -2,6 +2,7 @@ const char *DayShortStr[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 const char *MonthShortStr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 double temperature = getTemperature(TEMP_MODE_CELSIUS);
+int last_second = 0;
 
 void drawWatch(unsigned char key) {
   if (key == KEY_SELECT) {
@@ -10,6 +11,10 @@ void drawWatch(unsigned char key) {
   }
   
   rtc_get_time(&datetime);
+  if (datetime.second == last_second) {
+    return;
+  }
+  last_second = datetime.second;
 
   // draw date strings
   oled.setFont(BM_tube9x8);
