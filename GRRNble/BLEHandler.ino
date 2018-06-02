@@ -1,28 +1,44 @@
 String last_command = "";
-String command = "";
 String last_nofication = "";
 
 void checkBLE() {
-  while(Serial1.available() > 0){
-    char c = Serial1.read();
-
-    if (c == '\n') {
-      if (last_command != command) {
-        last_command = command;
-
-        // wake up
-        if (!is_active && !command.startsWith("AOK")) {
-          wake_flag = true;
-        }
-
-#ifdef DEBUG
-        Serial.println(command);
-        Serial.flush();
+#ifdef DEBUG      
+  Serial.println(tick_counter);
+  Serial.flush();
 #endif
 
+  String command = "";
+  
+  // trash garbage
+  while(Serial1.available() > 0) {
+    char c = Serial1.read();
+  }
+  
+  // send read command and wait
+  Serial1.println("SHR,001B");
+  Serial1.flush();
+  delay(10);
+
+  // read result
+  while(Serial1.available() > 0){
+    delay(5);
+    char c = Serial1.read();
+    
+    if (c == '\n') {
+      if (last_command != command && !command.startsWith("AOK")) {
+        last_command = command;
         has_notification = true;
-        command = "";
+
+        // wake up
+        if (!is_active) {
+          wake_flag = true;
+        }
       }
+
+#ifdef DEBUG
+      Serial.println(command);
+      Serial.flush();
+#endif
     }
     else {
       command += c;
@@ -49,55 +65,47 @@ void drawNotification(unsigned char key) {
   oled.setCursor(56, 7);
   printWithZero(datetime.second);
   oled.clearToEOL();
-  
-  if (last_command.startsWith("WV,001B,")) {
-    String message = decodeValue(last_command);
-    String title = "";
-    String body = "";
-    int sp = message.indexOf(",");
-    if (sp > 0) {
-      title = message.substring(0, sp);
-      body = message.substring(sp+1);
-    }
-    else {
-      title = message;
-    }
 
-    oled.set1X();
-    oled.setCursor(0, 0);
-    oled.print("Incoming");
-    oled.clearToEOL();
-  
-    // draw notification
-    oled.set2X();
-    oled.setCursor(0, 3);
-    oled.print(title);
-    oled.clearToEOL();
-    oled.set1X();
-    oled.setCursor(0, 5);
-    oled.print(body);
-    oled.clearToEOL();
-
-    if (last_nofication != message) {
-      beep();
-      delay(100);
-      beep();
-      delay(100);
-      beep();
-
-      last_nofication = message;
-    }
-
-#ifdef DEBUG
-    Serial.println(last_command);
-#endif
+  String message = decodeValue(last_command);
+  String title = "";
+  String body = "";
+  int sp = message.indexOf(",");
+  if (sp > 0) {
+    title = message.substring(0, sp);
+    body = message.substring(sp+1);
   }
+  else {
+    title = message;
+  }
+
+  oled.set1X();
+  oled.setCursor(0, 0);
+  oled.print("Incoming");
+  oled.clearToEOL();
+
+  // draw notification
+  oled.set2X();
+  oled.setCursor(0, 3);
+  oled.print(title);
+  oled.clearToEOL();
+  oled.set1X();
+  oled.setCursor(0, 5);
+  oled.print(body);
+  oled.clearToEOL();
+
+  if (last_nofication != message) {
+    beep();
+    delay(100);
+    beep();
+    delay(100);
+    beep();
+
+    last_nofication = message;
+  }
+
 }
 
-
-static String decodeValue(String value) {
-  String s = value.substring(8, value.length() - 2);
-  
+static String decodeValue(String s) {
   String str = "";
   for (int i=0; i<s.length(); i=i+2) {
     String tmp = "0x";

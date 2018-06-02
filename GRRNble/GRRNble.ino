@@ -6,7 +6,7 @@
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
 
-#define DEBUG 1
+//#define DEBUG 1
 
 // setting for SSD1306
 SSD1306AsciiWire oled;
@@ -35,7 +35,7 @@ unsigned long int tick_counter = 0;
 boolean wake_flag = false;
 boolean is_active = true;
 
-// settings for voltage checker
+// settings for battery service
 #define MAX_VOLTAGE 3.3
 int voltage = 0;
 
@@ -92,18 +92,33 @@ void setup() {
   Serial1.begin(2400);
 
   voltage = getVoltage();
-//  setPowerManagementMode(PM_STOP_MODE);
 }
 
+int last_tick_counter = 0;
 void loop() {
-  // get command from BLE module  
-  checkBLE();
-    
+  // get command from BLE module
+  if (is_active) {
+    int span = tick_counter - last_tick_counter;
+    if ( span > 5000 || span < 0) {
+      checkBLE();
+      last_tick_counter = tick_counter;
+    }
+  }
+  else {
+    if (tick_counter > 1000) {
+      setOperationClockMode(CLK_HIGH_SPEED_MODE);
+      checkBLE();
+      tick_counter = 0;
+      setOperationClockMode(CLK_LOW_SPEED_MODE);
+    }
+  }
+
   // read key
   unsigned char key = key_read();
 
   // turn display on if the display is off
   if (wake_flag == true) {
+    setOperationClockMode(CLK_HIGH_SPEED_MODE);
     oled.ssd1306WriteCmd(0x0af); // display on
     wake_flag = false;
     is_active = true;
@@ -127,11 +142,12 @@ void loop() {
     if(delay_sleep > 0 && tick_counter > DELAY_SLEEPS[delay_sleep]) {
       oled.ssd1306WriteCmd(0x0ae); // display off
       is_active = false;
+      setOperationClockMode(CLK_LOW_SPEED_MODE);
     }
-  }
-
-  // delay
-  for(int i=0;i<100;i++) {
-    _HALT();
+    
+    // delay
+    for(int i=0;i<100;i++) {
+      _HALT();
+    }
   }
 }
