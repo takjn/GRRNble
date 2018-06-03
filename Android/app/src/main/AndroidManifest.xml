@@ -25,6 +25,9 @@
             </intent-filter>
         </service>
 
+        <!-- 明示的なブロードキャストインテントを受信するレシーバー -->
+        <receiver android:name=".MainActivity$ExplicitIntentReceiver2" />
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

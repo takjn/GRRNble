@@ -11,9 +11,11 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -51,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private BluetoothAdapter mBluetoothAdapter;    // BluetoothAdapter : Bluetooth処理で必要
     private String mDeviceAddress = "";    // デバイスアドレス
-    private BluetoothGatt mBluetoothGatt = null;    // Gattサービスの検索、キャラスタリスティックの読み書き
+    private static BluetoothGatt mBluetoothGatt = null;    // Gattサービスの検索、キャラスタリスティックの読み書き
     // GUIアイテム
     private Button mButton_Connect;    // 接続ボタン
     private Button mButton_Disconnect;    // 切断ボタン
@@ -403,7 +405,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 接続
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
         mBluetoothGatt = device.connectGatt(this, false, mGattcallback);
-        NotificationService.mBluetoothGatt = mBluetoothGatt;
     }
 
     // 切断
@@ -514,5 +515,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
         return (alertDialogBuilder.create());
     }
+
+    /**
+     * 明示的ブロードキャストインテントを送出するボタン押下時
+     */
+    public void onClickSendExplicit(View view) {
+        Log.d(TAG, "onClickSendExplicit");
+        Intent intent = new Intent(getApplicationContext(), MainActivity.ExplicitIntentReceiver2.class);
+        intent.putExtra("title", "Hello,");
+        intent.putExtra("body", "world");
+        sendBroadcast(intent);
+    }
+
+    /**
+     * 明示的ブロードキャストインテントを受信するレシーバー
+     */
+    public static class ExplicitIntentReceiver2 extends BroadcastReceiver {
+        private static final String TAG = "ExplicitIntentReceiver2";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "ExplicitIntentReceiver.onReceive");
+
+            String title = intent.getStringExtra("title");
+            String body = intent.getStringExtra("body");
+            String message = title + body;
+
+            Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
+            toast.show();
+
+            final UUID UUID_SERVICE_PRIVATE = UUID.fromString("3B382559-223F-48CA-81B4-E151598F661B");
+            final UUID UUID_CHARACTERISTIC_PRIVATE2 = UUID.fromString("B2332443-1DD3-407B-B3E6-5D349CAF5368");
+
+            if (null != mBluetoothGatt) {
+                Log.d(TAG, "send message via BLE: "+ message);
+
+                BluetoothGattCharacteristic blechar = mBluetoothGatt.getService(UUID_SERVICE_PRIVATE).getCharacteristic(UUID_CHARACTERISTIC_PRIVATE2);
+                blechar.setValue(message);
+                mBluetoothGatt.writeCharacteristic(blechar);
+            }
+        }
+    }
+
 
 }
