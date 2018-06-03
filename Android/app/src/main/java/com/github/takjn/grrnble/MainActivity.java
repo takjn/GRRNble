@@ -13,10 +13,16 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -33,6 +39,8 @@ import android.provider.Settings;
 import android.text.TextUtils;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, DebugFragment.DebugListener {
@@ -52,14 +60,97 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
 
-    private static BluetoothGatt mBluetoothGatt = null;    // Gattサービスの検索、キャラスタリスティックの読み書き
-    private BluetoothAdapter mBluetoothAdapter;    // BluetoothAdapter : Bluetooth処理で必要
-    private String mDeviceAddress = "";    // デバイスアドレス
+    private static BluetoothGatt mBluetoothGatt = null;
+    private BluetoothAdapter mBluetoothAdapter;
 
-    // GUIアイテム
+    private static final long SCAN_PERIOD = 10000;  // スキャン時間。単位はミリ秒。
+    private Handler mHandler;                       // UIスレッド操作ハンドラ : 「一定時間後にスキャンをやめる処理」で必要
+    private boolean mScanning = false;              // スキャン中かどうかのフラグ
+    private BluetoothDevice mDevice = null;         // 発見されたデバイス
+
+    private Button mButtonScan;
     private Button mButtonConnect;
     private Button mButtonDisconnect;
     private DebugFragment mFragmentDebug;
+
+
+    /**
+     * Device scan callback
+     */
+    private ScanCallback mLeScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, final ScanResult result) {
+            super.onScanResult(callbackType, result);
+            mDevice = result.getDevice();
+
+            Log.d(TAG, mDevice.getName());
+            Log.d(TAG, mDevice.getAddress());
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    stopScan();
+                }
+            });
+        }
+    };
+
+    // スキャンの開始
+    private void startScan() {
+        if (mScanning) return;
+
+        final android.bluetooth.le.BluetoothLeScanner scanner = mBluetoothAdapter.getBluetoothLeScanner();
+
+        if (scanner == null) {
+            return;
+        }
+
+        // スキャン開始（一定時間後にスキャン停止する）
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                stopScan();
+            }
+        }, SCAN_PERIOD);
+
+        ScanFilter scanFilter = new ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString("3B382559-223F-48CA-81B4-E151598F661B")).build();
+        List<ScanFilter> scanFilterList = new ArrayList();
+        scanFilterList.add(scanFilter);
+
+        ScanSettings scanSettings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build();
+        mScanning = true;
+        scanner.startScan(scanFilterList, scanSettings, mLeScanCallback);
+
+//        // メニューの更新
+//        invalidateOptionsMenu();
+    }
+
+    // スキャンの停止
+    private void stopScan() {
+        mScanning = false;
+
+        mHandler.removeCallbacksAndMessages(null);
+        android.bluetooth.le.BluetoothLeScanner scanner = mBluetoothAdapter.getBluetoothLeScanner();
+        if (scanner == null) {
+            return;
+        }
+        scanner.stopScan(mLeScanCallback);
+
+        if (mDevice != null) {
+            ((TextView) findViewById(R.id.textview_devicename)).setText(mDevice.getName());
+            ((TextView) findViewById(R.id.textview_deviceaddress)).setText(mDevice.getAddress());
+
+            mButtonScan.setEnabled(false);
+            mButtonConnect.setEnabled(true);
+        } else {
+            mButtonScan.setEnabled(true);
+            Toast.makeText(this, R.string.device_is_not_found, Toast.LENGTH_SHORT).show();
+        }
+
+//        // メニューの更新
+//        invalidateOptionsMenu();
+    }
+
 
     // BluetoothGattコールバックオブジェクト
     private final BluetoothGattCallback mGattcallback = new BluetoothGattCallback() {
@@ -188,6 +279,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mButtonScan = (Button) findViewById(R.id.button_scan);
+        mButtonScan.setOnClickListener(this);
+
         mButtonConnect = (Button) findViewById(R.id.button_connect);
         mButtonConnect.setOnClickListener(this);
         mButtonDisconnect = (Button) findViewById(R.id.button_disconnect);
@@ -195,6 +289,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         FragmentManager fragmentManager = getFragmentManager();
         mFragmentDebug = (DebugFragment) fragmentManager.findFragmentById(R.id.fragment_debug);
+
+        mHandler = new Handler();
 
         // If the user did not turn the notification listener service on we prompt him to do so
         // Got it from: https://github.com/Chagall/notification-listener-service-example/blob/master/app/src/main/java/com/github/chagall/notificationlistenerexample/MainActivity.java
@@ -233,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         hideDebugFragment();
 
         // デバイスアドレスが空でなければ、接続ボタンを有効にする。
-        if (!mDeviceAddress.equals("")) {
+        if (mDevice != null) {
             mButtonConnect.setEnabled(true);
         }
 
@@ -281,22 +377,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 break;
-            case REQUEST_CONNECTDEVICE:
-                String strDeviceName;
-                if (Activity.RESULT_OK == resultCode) {
-                    // デバイスリストアクティビティからの情報の取得
-                    strDeviceName = data.getStringExtra(DeviceListActivity.EXTRAS_DEVICE_NAME);
-                    mDeviceAddress = data.getStringExtra(DeviceListActivity.EXTRAS_DEVICE_ADDRESS);
-                } else {
-                    strDeviceName = "";
-                    mDeviceAddress = "";
-                }
-                ((TextView) findViewById(R.id.textview_devicename)).setText(strDeviceName);
-                ((TextView) findViewById(R.id.textview_deviceaddress)).setText(mDeviceAddress);
-                ((TextView) findViewById(R.id.textview_readchara1)).setText("");
-                ((TextView) findViewById(R.id.textview_readchara2)).setText("");
-                ((TextView) findViewById(R.id.textview_notifychara1)).setText("");
-                break;
+            // TODO: NotificationListnerの確認
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -322,6 +403,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        if (v.getId() == mButtonScan.getId()) {
+            mButtonScan.setEnabled(false);
+            startScan();
+            return;
+        }
         if (mButtonConnect.getId() == v.getId()) {
             mButtonConnect.setEnabled(false);    // 接続ボタンの無効化（連打対策）
             connect();            // 接続
@@ -336,8 +422,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // 接続
     private void connect() {
-        if (mDeviceAddress.equals("")) {
-            // DeviceAddressが空の場合は処理しない
+        if (mDevice == null) {
             return;
         }
 
@@ -347,8 +432,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         // 接続
-        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mDeviceAddress);
-        mBluetoothGatt = device.connectGatt(this, false, mGattcallback);
+        mBluetoothGatt = mDevice.connectGatt(this, false, mGattcallback);
     }
 
     // 切断

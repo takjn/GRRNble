@@ -5,10 +5,14 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanFilter.Builder;
+import android.bluetooth.le.ScanSettings;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -23,6 +27,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class DeviceListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
@@ -46,6 +52,7 @@ public class DeviceListActivity extends AppCompatActivity implements AdapterView
                 @Override
                 public void run() {
                     mDeviceListAdapter.addDevice(result.getDevice());
+                    stopScan();
                 }
             });
         }
@@ -153,8 +160,15 @@ public class DeviceListActivity extends AppCompatActivity implements AdapterView
             }
         }, SCAN_PERIOD);
 
+//        ScanFilter scanFilter = new ScanFilter.Builder().setDeviceName("GRRNble").build();
+        ScanFilter scanFilter = new ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString("3B382559-223F-48CA-81B4-E151598F661B")).build();
+
+        List<ScanFilter> scanFilterList = new ArrayList();
+        scanFilterList.add(scanFilter);
+
+        ScanSettings scanSettings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build();
         mScanning = true;
-        scanner.startScan(mLeScanCallback);
+        scanner.startScan(scanFilterList, scanSettings, mLeScanCallback);
 
         // メニューの更新
         invalidateOptionsMenu();
