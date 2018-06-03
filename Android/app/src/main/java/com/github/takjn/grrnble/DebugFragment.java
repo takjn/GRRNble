@@ -13,13 +13,14 @@ import android.widget.TextView;
 public class DebugFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = "DebugFragment";
 
-    private TextView mTextView_ReadChara1;
-    private TextView mTextView_ReadChara2;
-    private Button mButton_ReadChara1;
-    private Button mButton_ReadChara2;
-    private CheckBox mCheckBox_NotifyChara1;
-    private Button mButton_WriteHello;
-    private Button mButton_WriteWorld;
+    private TextView mTextViewReadChara1;
+    private TextView mTextViewReadChara2;
+    private TextView mTextViewNotifyChara1;
+    private Button mButtonReadChara1;
+    private Button mButtonReadChara2;
+    private CheckBox mCheckBoxNotifyChara1;
+    private Button mButtonWriteHello;
+    private Button mButtonWriteWorld;
 
     private DebugListener mDebugListener;
 
@@ -33,23 +34,24 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mTextView_ReadChara1 =  ((TextView) view.findViewById(R.id.textview_readchara1));
-        mTextView_ReadChara2 =  ((TextView) view.findViewById(R.id.textview_readchara2));
+        mTextViewReadChara1 = ((TextView) view.findViewById(R.id.textview_readchara1));
+        mTextViewReadChara2 = ((TextView) view.findViewById(R.id.textview_readchara2));
+        mTextViewNotifyChara1 = ((TextView) view.findViewById(R.id.textview_notifychara1));
 
-        mButton_ReadChara1 = (Button) view.findViewById(R.id.button_readchara1);
-        mButton_ReadChara1.setOnClickListener(this);
+        mButtonReadChara1 = (Button) view.findViewById(R.id.button_readchara1);
+        mButtonReadChara1.setOnClickListener(this);
 
-        mButton_ReadChara2 = (Button) view.findViewById(R.id.button_readchara2);
-        mButton_ReadChara2.setOnClickListener(this);
+        mButtonReadChara2 = (Button) view.findViewById(R.id.button_readchara2);
+        mButtonReadChara2.setOnClickListener(this);
 
-        mCheckBox_NotifyChara1 = (CheckBox) view.findViewById(R.id.checkbox_notifychara1);
-        mCheckBox_NotifyChara1.setOnClickListener(this);
+        mCheckBoxNotifyChara1 = (CheckBox) view.findViewById(R.id.checkbox_notifychara1);
+        mCheckBoxNotifyChara1.setOnClickListener(this);
 
-        mButton_WriteHello = (Button) view.findViewById(R.id.button_writehello);
-        mButton_WriteHello.setOnClickListener(this);
+        mButtonWriteHello = (Button) view.findViewById(R.id.button_writehello);
+        mButtonWriteHello.setOnClickListener(this);
 
-        mButton_WriteWorld = (Button) view.findViewById(R.id.button_writeworld);
-        mButton_WriteWorld.setOnClickListener(this);
+        mButtonWriteWorld = (Button) view.findViewById(R.id.button_writeworld);
+        mButtonWriteWorld.setOnClickListener(this);
     }
 
     @Override
@@ -73,24 +75,24 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
             return;
         }
 
-        if (mButton_ReadChara1.getId() == v.getId()) {
+        if (mButtonReadChara1.getId() == v.getId()) {
             mDebugListener.onReadCharacteristic1();
             return;
         }
-        if (mButton_ReadChara2.getId() == v.getId()) {
+        if (mButtonReadChara2.getId() == v.getId()) {
             mDebugListener.onReadCharacteristic2();
             return;
         }
-        if (mCheckBox_NotifyChara1.getId() == v.getId()) {
-            mDebugListener.onSetCharacteristicNotification1(mCheckBox_NotifyChara1.isChecked());
+        if (mCheckBoxNotifyChara1.getId() == v.getId()) {
+            mDebugListener.onSetCharacteristicNotification1(mCheckBoxNotifyChara1.isChecked());
             return;
         }
-        if (mButton_WriteHello.getId() == v.getId()) {
+        if (mButtonWriteHello.getId() == v.getId()) {
             this.enabled(false);
             mDebugListener.onWriteCharacteristic2("Hello");
             return;
         }
-        if (mButton_WriteWorld.getId() == v.getId()) {
+        if (mButtonWriteWorld.getId() == v.getId()) {
             this.enabled(false);
             mDebugListener.onWriteCharacteristic2("World");
             return;
@@ -98,22 +100,29 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
     }
 
     public void enabled(boolean value) {
-        mButton_WriteHello.setEnabled(value);
-        mButton_WriteWorld.setEnabled(value);
+        mButtonWriteHello.setEnabled(value);
+        mButtonWriteWorld.setEnabled(value);
     }
 
     public void setChara1(String value) {
-        mTextView_ReadChara1.setText(value);
+        mTextViewReadChara1.setText(value);
     }
 
     public void setChara2(String value) {
-        mTextView_ReadChara2.setText(value);
+        mTextViewReadChara2.setText(value);
+    }
+
+    public void setNotifyChara1(String value) {
+        mTextViewNotifyChara1.setText(value);
     }
 
     public interface DebugListener {
         public void onReadCharacteristic1();
+
         public void onSetCharacteristicNotification1(boolean value);
+
         public void onReadCharacteristic2();
+
         public void onWriteCharacteristic2(String message);
     }
 

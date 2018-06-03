@@ -51,13 +51,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CONNECTDEVICE = 2;
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
+
     private static BluetoothGatt mBluetoothGatt = null;    // Gattサービスの検索、キャラスタリスティックの読み書き
     private BluetoothAdapter mBluetoothAdapter;    // BluetoothAdapter : Bluetooth処理で必要
     private String mDeviceAddress = "";    // デバイスアドレス
 
     // GUIアイテム
-    private Button mButton_Connect;    // 接続ボタン
-    private Button mButton_Disconnect;    // 切断ボタン
+    private Button mButtonConnect;
+    private Button mButtonDisconnect;
     private DebugFragment mFragmentDebug;
 
     // BluetoothGattコールバックオブジェクト
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void run() {
                         // GUIアイテムの有効無効の設定
                         // 切断ボタンを有効にする
-                        mButton_Disconnect.setEnabled(true);
+                        mButtonDisconnect.setEnabled(true);
                     }
                 });
                 return;
@@ -155,8 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 final String strChara = String.valueOf(bb.getShort());
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        // GUIアイテムへの反映
-                        ((TextView) findViewById(R.id.textview_notifychara1)).setText(strChara);
+                        mFragmentDebug.setNotifyChara1(strChara);
                     }
                 });
                 return;
@@ -188,13 +188,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mButton_Connect = (Button) findViewById(R.id.button_connect);
-        mButton_Connect.setOnClickListener(this);
-        mButton_Disconnect = (Button) findViewById(R.id.button_disconnect);
-        mButton_Disconnect.setOnClickListener(this);
+        mButtonConnect = (Button) findViewById(R.id.button_connect);
+        mButtonConnect.setOnClickListener(this);
+        mButtonDisconnect = (Button) findViewById(R.id.button_disconnect);
+        mButtonDisconnect.setOnClickListener(this);
 
         FragmentManager fragmentManager = getFragmentManager();
-        mFragmentDebug = (DebugFragment)fragmentManager.findFragmentById(R.id.fragment_debug);
+        mFragmentDebug = (DebugFragment) fragmentManager.findFragmentById(R.id.fragment_debug);
 
         // If the user did not turn the notification listener service on we prompt him to do so
         // Got it from: https://github.com/Chagall/notification-listener-service-example/blob/master/app/src/main/java/com/github/chagall/notificationlistenerexample/MainActivity.java
@@ -228,17 +228,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         requestBluetoothFeature();
 
         // GUIアイテムの有効無効の設定
-        mButton_Connect.setEnabled(false);
-        mButton_Disconnect.setEnabled(false);
+        mButtonConnect.setEnabled(false);
+        mButtonDisconnect.setEnabled(false);
         hideDebugFragment();
 
         // デバイスアドレスが空でなければ、接続ボタンを有効にする。
         if (!mDeviceAddress.equals("")) {
-            mButton_Connect.setEnabled(true);
+            mButtonConnect.setEnabled(true);
         }
 
         // 接続ボタンを押す
-        mButton_Connect.callOnClick();
+        mButtonConnect.callOnClick();
     }
 
     // 別のアクティビティ（か別のアプリ）に移行したことで、バックグラウンドに追いやられた時
@@ -322,13 +322,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (mButton_Connect.getId() == v.getId()) {
-            mButton_Connect.setEnabled(false);    // 接続ボタンの無効化（連打対策）
+        if (mButtonConnect.getId() == v.getId()) {
+            mButtonConnect.setEnabled(false);    // 接続ボタンの無効化（連打対策）
             connect();            // 接続
             return;
         }
-        if (mButton_Disconnect.getId() == v.getId()) {
-            mButton_Disconnect.setEnabled(false);    // 切断ボタンの無効化（連打対策）
+        if (mButtonDisconnect.getId() == v.getId()) {
+            mButtonDisconnect.setEnabled(false);    // 切断ボタンの無効化（連打対策）
             disconnect();            // 切断
             return;
         }
@@ -367,8 +367,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBluetoothGatt = null;
         // GUIアイテムの有効無効の設定
         // 接続ボタンのみ有効にする
-        mButton_Connect.setEnabled(true);
-        mButton_Disconnect.setEnabled(false);
+        mButtonConnect.setEnabled(true);
+        mButtonDisconnect.setEnabled(false);
         hideDebugFragment();
     }
 
@@ -470,6 +470,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
+     * DebugListener.
+     */
+    @Override
+    public void onWriteCharacteristic2(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        writeCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2, message);
+    }
+
+    @Override
+    public void onReadCharacteristic1() {
+        readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1);
+    }
+
+    @Override
+    public void onReadCharacteristic2() {
+        readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2);
+    }
+
+    @Override
+    public void onSetCharacteristicNotification1(boolean value) {
+        setCharacteristicNotification(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1, value);
+    }
+
+    /**
      * BroadcastReceiver.
      * Receive a broadcast-intent and write characteristics.
      */
@@ -498,30 +522,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mBluetoothGatt.writeCharacteristic(blechar);
             }
         }
-    }
-
-    /**
-     * DebugListener.
-     */
-    @Override
-    public void onWriteCharacteristic2(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-        writeCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2, message);
-    }
-
-    @Override
-    public void onReadCharacteristic1(){
-        readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1);
-    }
-
-    @Override
-    public void onReadCharacteristic2() {
-        readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2);
-    }
-
-    @Override
-    public void onSetCharacteristicNotification1(boolean value) {
-        setCharacteristicNotification(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1, value);
     }
 
 }
