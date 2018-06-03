@@ -2,6 +2,8 @@ package com.github.takjn.grrnble;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -21,7 +23,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
@@ -34,7 +35,7 @@ import android.text.TextUtils;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, DebugFragment.DebugListener {
 
     private static final String TAG = "MainActivity";
 
@@ -53,14 +54,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static BluetoothGatt mBluetoothGatt = null;    // Gattサービスの検索、キャラスタリスティックの読み書き
     private BluetoothAdapter mBluetoothAdapter;    // BluetoothAdapter : Bluetooth処理で必要
     private String mDeviceAddress = "";    // デバイスアドレス
+
     // GUIアイテム
     private Button mButton_Connect;    // 接続ボタン
     private Button mButton_Disconnect;    // 切断ボタン
-    private Button mButton_ReadChara1;    // キャラクタリスティック１の読み込みボタン
-    private Button mButton_ReadChara2;    // キャラクタリスティック２の読み込みボタン
-    private CheckBox mCheckBox_NotifyChara1;    // キャラクタリスティック１の変更通知ON/OFFチェックボックス
-    private Button mButton_WriteHello;        // キャラクタリスティック２への「Hello」書き込みボタン
-    private Button mButton_WriteWorld;        // キャラクタリスティック２への「World」書き込みボタン
+    private DebugFragment mFragmentDebug;
 
     // BluetoothGattコールバックオブジェクト
     private final BluetoothGattCallback mGattcallback = new BluetoothGattCallback() {
@@ -87,13 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mBluetoothGatt.connect();
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        // GUIアイテムの有効無効の設定
-                        // 読み込みボタンを無効にする（通知チェックボックスはチェック状態を維持。通知ONで切断した場合、再接続時に通知は再開するので）
-                        mButton_ReadChara1.setEnabled(false);
-                        mButton_ReadChara2.setEnabled(false);
-                        mCheckBox_NotifyChara1.setEnabled(false);
-                        mButton_WriteHello.setEnabled(false);
-                        mButton_WriteWorld.setEnabled(false);
+                        hideDebugFragment();
                     }
                 });
                 return;
@@ -116,12 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (UUID_SERVICE_PRIVATE.equals(service.getUuid())) {    // プライベートサービス
                     runOnUiThread(new Runnable() {
                         public void run() {
-                            // GUIアイテムの有効無効の設定
-                            mButton_ReadChara1.setEnabled(true);
-                            mButton_ReadChara2.setEnabled(true);
-                            mCheckBox_NotifyChara1.setEnabled(true);
-                            mButton_WriteHello.setEnabled(true);
-                            mButton_WriteWorld.setEnabled(true);
+                            showDebugFragment();
                         }
                     });
                     continue;
@@ -142,8 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 final String strChara = String.valueOf(bb.getShort());
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        // GUIアイテムへの反映
-                        ((TextView) findViewById(R.id.textview_readchara1)).setText(strChara);
+                        mFragmentDebug.setChara1(strChara);
                     }
                 });
                 return;
@@ -152,8 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 final String strChara = characteristic.getStringValue(0);
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        // GUIアイテムへの反映
-                        ((TextView) findViewById(R.id.textview_readchara2)).setText(strChara);
+                        mFragmentDebug.setChara2(strChara);
                     }
                 });
                 return;
@@ -188,10 +173,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (UUID_CHARACTERISTIC_PRIVATE2.equals(characteristic.getUuid())) {    // キャラクタリスティック２：データサイズは、8バイト（文字列を想定。半角文字8文字）
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        // GUIアイテムの有効無効の設定
-                        // 書き込みボタンを有効にする
-                        mButton_WriteHello.setEnabled(true);
-                        mButton_WriteWorld.setEnabled(true);
+                        mFragmentDebug.enabled(true);
                     }
                 });
                 return;
@@ -210,16 +192,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButton_Connect.setOnClickListener(this);
         mButton_Disconnect = (Button) findViewById(R.id.button_disconnect);
         mButton_Disconnect.setOnClickListener(this);
-        mButton_ReadChara1 = (Button) findViewById(R.id.button_readchara1);
-        mButton_ReadChara1.setOnClickListener(this);
-        mButton_ReadChara2 = (Button) findViewById(R.id.button_readchara2);
-        mButton_ReadChara2.setOnClickListener(this);
-        mCheckBox_NotifyChara1 = (CheckBox) findViewById(R.id.checkbox_notifychara1);
-        mCheckBox_NotifyChara1.setOnClickListener(this);
-        mButton_WriteHello = (Button) findViewById(R.id.button_writehello);
-        mButton_WriteHello.setOnClickListener(this);
-        mButton_WriteWorld = (Button) findViewById(R.id.button_writeworld);
-        mButton_WriteWorld.setOnClickListener(this);
+
+        FragmentManager fragmentManager = getFragmentManager();
+        mFragmentDebug = (DebugFragment)fragmentManager.findFragmentById(R.id.fragment_debug);
 
         // If the user did not turn the notification listener service on we prompt him to do so
         // Got it from: https://github.com/Chagall/notification-listener-service-example/blob/master/app/src/main/java/com/github/chagall/notificationlistenerexample/MainActivity.java
@@ -255,12 +230,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // GUIアイテムの有効無効の設定
         mButton_Connect.setEnabled(false);
         mButton_Disconnect.setEnabled(false);
-        mButton_ReadChara1.setEnabled(false);
-        mButton_ReadChara2.setEnabled(false);
-        mCheckBox_NotifyChara1.setChecked(false);
-        mCheckBox_NotifyChara1.setEnabled(false);
-        mButton_WriteHello.setEnabled(false);
-        mButton_WriteWorld.setEnabled(false);
+        hideDebugFragment();
 
         // デバイスアドレスが空でなければ、接続ボタンを有効にする。
         if (!mDeviceAddress.equals("")) {
@@ -362,30 +332,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             disconnect();            // 切断
             return;
         }
-        if (mButton_ReadChara1.getId() == v.getId()) {
-            readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1);
-            return;
-        }
-        if (mButton_ReadChara2.getId() == v.getId()) {
-            readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2);
-            return;
-        }
-        if (mCheckBox_NotifyChara1.getId() == v.getId()) {
-            setCharacteristicNotification(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1, mCheckBox_NotifyChara1.isChecked());
-            return;
-        }
-        if (mButton_WriteHello.getId() == v.getId()) {
-            mButton_WriteHello.setEnabled(false);    // 書き込みボタンの無効化（連打対策）
-            mButton_WriteWorld.setEnabled(false);    // 書き込みボタンの無効化（連打対策）
-            writeCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2, "Hello");
-            return;
-        }
-        if (mButton_WriteWorld.getId() == v.getId()) {
-            mButton_WriteHello.setEnabled(false);    // 書き込みボタンの無効化（連打対策）
-            mButton_WriteWorld.setEnabled(false);    // 書き込みボタンの無効化（連打対策）
-            writeCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2, "World");
-            return;
-        }
     }
 
     // 接続
@@ -423,12 +369,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 接続ボタンのみ有効にする
         mButton_Connect.setEnabled(true);
         mButton_Disconnect.setEnabled(false);
-        mButton_ReadChara1.setEnabled(false);
-        mButton_ReadChara2.setEnabled(false);
-        mCheckBox_NotifyChara1.setChecked(false);
-        mCheckBox_NotifyChara1.setEnabled(false);
-        mButton_WriteHello.setEnabled(false);
-        mButton_WriteWorld.setEnabled(false);
+        hideDebugFragment();
     }
 
     // キャラクタリスティックの読み込み
@@ -460,6 +401,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BluetoothGattCharacteristic blechar = mBluetoothGatt.getService(uuid_service).getCharacteristic(uuid_characteristic);
         blechar.setValue(string);
         mBluetoothGatt.writeCharacteristic(blechar);
+    }
+
+    private void showDebugFragment() {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.show(mFragmentDebug);
+        fragmentTransaction.commit();
+    }
+
+    private void hideDebugFragment() {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.hide(mFragmentDebug);
+        fragmentTransaction.commit();
     }
 
     /**
@@ -527,7 +482,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             String title = intent.getStringExtra("title");
             String body = intent.getStringExtra("body");
-            String message = title + body;
+            String message = title + "," + body;
 
             Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
             toast.show();
@@ -544,4 +499,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
+
+    /**
+     * DebugListener.
+     */
+    @Override
+    public void onWriteCharacteristic2(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        writeCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2, message);
+    }
+
+    @Override
+    public void onReadCharacteristic1(){
+        readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1);
+    }
+
+    @Override
+    public void onReadCharacteristic2() {
+        readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2);
+    }
+
+    @Override
+    public void onSetCharacteristicNotification1(boolean value) {
+        setCharacteristicNotification(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1, value);
+    }
+
 }
