@@ -55,7 +55,7 @@
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="20dp" />
+        android:layout_height="10dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -71,15 +71,20 @@
             android:text="scan"
             android:textSize="18sp" />
 
-        <Space
-            android:layout_width="5dp"
-            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/button_connect"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/connect"
+            android:layout_weight="1"
             android:textSize="18sp" />
 
         <Space
@@ -88,11 +93,13 @@
 
         <Button
             android:id="@+id/button_disconnect"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/disconnect"
+            android:layout_weight="1"
             android:textSize="18sp" />
     </LinearLayout>
+
 
     <fragment
         android:id="@+id/fragment_debug"
