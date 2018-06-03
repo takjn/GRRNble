@@ -2,8 +2,29 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/menuitem_search"
-        app:showAsAction="ifRoom|withText"
-        android:icon="@android:drawable/ic_search_category_default"
-        android:title="@string/search" />
+        android:id="@+id/menuitem_progress"
+        android:checkable="false"
+        android:orderInCategory="1"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/menuitem_scan"
+        android:title="@string/scan"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menuitem_stop"
+        android:title="@string/stop"
+        android:orderInCategory="101"
+        app:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menuitem_connect"
+        android:title="@string/connect"
+        android:orderInCategory="1002"
+        app:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/menuitem_disconnect"
+        android:title="@string/disconnect"
+        android:orderInCategory="1003"
+        app:showAsAction="ifRoom|withText"/>
+
 </menu>

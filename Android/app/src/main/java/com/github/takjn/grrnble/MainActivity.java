@@ -337,7 +337,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonConnect.callOnClick();
     }
 
-    // 別のアクティビティ（か別のアプリ）に移行したことで、バックグラウンドに追いやられた時
     @Override
     protected void onPause() {
         super.onPause();
@@ -346,7 +345,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         disconnect();
     }
 
-    // アクティビティの終了直前
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -393,10 +391,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menuitem_search:
-                Intent devicelistactivityIntent = new Intent(this, DeviceListActivity.class);
-                startActivityForResult(devicelistactivityIntent, REQUEST_CONNECTDEVICE);
-                return true;
+//            case R.id.menuitem_search:
+//                Intent devicelistactivityIntent = new Intent(this, DeviceListActivity.class);
+//                startActivityForResult(devicelistactivityIntent, REQUEST_CONNECTDEVICE);
+//                return true;
         }
         return false;
     }
@@ -420,18 +418,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    // 接続
+    /**
+     * Connect to the device
+     */
     private void connect() {
         if (mDevice == null) {
+            // Device is not found
             return;
         }
 
-        if (null != mBluetoothGatt) {
-            // mBluetoothGattがnullでないなら接続済みか、接続中。
+        if (mBluetoothGatt != null) {
+            // Device is connected
             return;
         }
 
-        // 接続
         mBluetoothGatt = mDevice.connectGatt(this, false, mGattcallback);
     }
 

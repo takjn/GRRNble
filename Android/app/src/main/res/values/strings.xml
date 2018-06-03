@@ -28,10 +28,6 @@
     <string name="notification_listener_service">Notification Service</string>
     <string name="notification_listener_service_explanation">Please turn the notification listener service on.</string>
 
-    <!-- DeviceListActivity -->
-    <!-- Toast -->
-    <string name="unknown_device">Unknown device</string>
-
     <!-- Menu -->
     <string name="scan">Scan</string>
     <string name="stop">Stop</string>
