@@ -50,9 +50,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CONNECTDEVICE = 2;
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
+    private static BluetoothGatt mBluetoothGatt = null;    // Gattサービスの検索、キャラスタリスティックの読み書き
     private BluetoothAdapter mBluetoothAdapter;    // BluetoothAdapter : Bluetooth処理で必要
     private String mDeviceAddress = "";    // デバイスアドレス
-    private static BluetoothGatt mBluetoothGatt = null;    // Gattサービスの検索、キャラスタリスティックの読み書き
     // GUIアイテム
     private Button mButton_Connect;    // 接続ボタン
     private Button mButton_Disconnect;    // 切断ボタン
@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private CheckBox mCheckBox_NotifyChara1;    // キャラクタリスティック１の変更通知ON/OFFチェックボックス
     private Button mButton_WriteHello;        // キャラクタリスティック２への「Hello」書き込みボタン
     private Button mButton_WriteWorld;        // キャラクタリスティック２への「World」書き込みボタン
+
     // BluetoothGattコールバックオブジェクト
     private final BluetoothGattCallback mGattcallback = new BluetoothGattCallback() {
         // 接続状態変更（connectGatt()の結果として呼ばれる。）
@@ -197,7 +198,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     };
-    private AlertDialog enableNotificationListenerAlertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -221,11 +221,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButton_WriteWorld = (Button) findViewById(R.id.button_writeworld);
         mButton_WriteWorld.setOnClickListener(this);
 
-        // https://github.com/Chagall/notification-listener-service-example/blob/master/app/src/main/java/com/github/chagall/notificationlistenerexample/MainActivity.java
         // If the user did not turn the notification listener service on we prompt him to do so
+        // Got it from: https://github.com/Chagall/notification-listener-service-example/blob/master/app/src/main/java/com/github/chagall/notificationlistenerexample/MainActivity.java
         if (!isNotificationServiceEnabled()) {
-            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-            enableNotificationListenerAlertDialog.show();
+            buildNotificationServiceAlertDialog().show();
         }
 
         // Check if system has BLE feature
@@ -537,7 +536,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             final UUID UUID_CHARACTERISTIC_PRIVATE2 = UUID.fromString("B2332443-1DD3-407B-B3E6-5D349CAF5368");
 
             if (null != mBluetoothGatt) {
-                Log.d(TAG, "send message via BLE: "+ message);
+                Log.d(TAG, "send message via BLE: " + message);
 
                 BluetoothGattCharacteristic blechar = mBluetoothGatt.getService(UUID_SERVICE_PRIVATE).getCharacteristic(UUID_CHARACTERISTIC_PRIVATE2);
                 blechar.setValue(message);
