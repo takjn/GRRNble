@@ -42,7 +42,8 @@ public class NotificationService extends NotificationListenerService {
             body = packageName;
         }
 
-        Intent intent = new Intent(getApplicationContext(), MainActivity.ExplicitIntentReceiver2.class);
+        // send a explicit broadcast intent
+        Intent intent = new Intent(getApplicationContext(), MainActivity.WriteCharacteristicIntentReceiver.class);
         intent.putExtra("title", title);
         intent.putExtra("body", body);
         sendBroadcast(intent);

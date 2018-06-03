@@ -15,7 +15,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -517,25 +516,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 明示的ブロードキャストインテントを送出するボタン押下時
+     * BroadcastReceiver.
+     * Receive a broadcast-intent and write characteristics.
      */
-    public void onClickSendExplicit(View view) {
-        Log.d(TAG, "onClickSendExplicit");
-        Intent intent = new Intent(getApplicationContext(), MainActivity.ExplicitIntentReceiver2.class);
-        intent.putExtra("title", "Hello,");
-        intent.putExtra("body", "world");
-        sendBroadcast(intent);
-    }
-
-    /**
-     * 明示的ブロードキャストインテントを受信するレシーバー
-     */
-    public static class ExplicitIntentReceiver2 extends BroadcastReceiver {
-        private static final String TAG = "ExplicitIntentReceiver2";
+    public static class WriteCharacteristicIntentReceiver extends BroadcastReceiver {
+        private static final String TAG = "WriteCharacteristic";
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "ExplicitIntentReceiver.onReceive");
+            Log.d(TAG, "onReceive");
 
             String title = intent.getStringExtra("title");
             String body = intent.getStringExtra("body");
@@ -556,6 +545,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
-
-
 }
