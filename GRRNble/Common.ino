@@ -2,15 +2,18 @@
 unsigned char key_read(void) {
   if (digitalRead(KEY_SELECT_PIN) == 0) {
     while (digitalRead(KEY_SELECT_PIN) == 0);
-    wake_flag = true;
+    if (is_active == false) wake_flag = true;
+    tick_counter = 0;
     return KEY_SELECT;
   } else if (digitalRead(KEY_PREV_PIN) == 0) {
     while (digitalRead(KEY_PREV_PIN) == 0);
-    wake_flag = true;
+    if (is_active == false) wake_flag = true;
+    tick_counter = 0;
     return KEY_PREV;
   } else if (digitalRead(KEY_NEXT_PIN) == 0) {
     while (digitalRead(KEY_NEXT_PIN) == 0);
-    wake_flag = true;
+    if (is_active == false) wake_flag = true;
+    tick_counter = 0;
     return KEY_NEXT;
   }
   
@@ -57,14 +60,13 @@ static int getVoltage() {
   digitalWrite(VOLTAGE_OUT_PIN, 0);
 
   ret = (int)(v/MAX_VOLTAGE*100);
-  if (ret > 99)
-  {
+  if (ret > 99) {
     ret = 99;
   }
   
   String s = "SHW,001E," + String(ret, HEX); 
-  Serial2.println(s);
-  Serial2.flush();
+  Serial1.println(s);
+  Serial1.flush();
 
   return ret;
 }

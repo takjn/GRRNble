@@ -6,14 +6,14 @@
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
 
-#define DEBUG 1
+//#define DEBUG 1
 
 // setting for SSD1306
 SSD1306AsciiWire oled;
 #define I2C_ADDRESS 0x3C
 
 // settings for I/O pins
-#define BUZZER_PIN      5           // pin for buzzer
+#define BUZZER_PIN      10          // pin for buzzer
 #define KEY_PREV_PIN    4           // pin for previous button
 #define KEY_SELECT_PIN  3           // pin for select button
 #define KEY_NEXT_PIN    2           // pin for next button
@@ -30,12 +30,12 @@ int display_contrast = 3;
 
 // settings for power saving
 const unsigned long DELAY_SLEEPS[4] = {0, 5000, 10000, 15000};  // sleep (millisec, 0=always on)
-int delay_sleep = 0;
+int delay_sleep = 1;
 unsigned long int tick_counter = 0;
 boolean wake_flag = false;
 boolean is_active = true;
 
-// settings for voltage checker
+// settings for battery service
 #define MAX_VOLTAGE 3.3
 int voltage = 0;
 
@@ -55,8 +55,6 @@ uint8_t mode_current = MODE_TIME;
 #define KEY_SELECT 3
 
 // Notification handler
-String last_command = "";
-String command = "";
 boolean has_notification = false;
 
 void tick_handler(unsigned long u32ms) {
@@ -91,54 +89,48 @@ void setup() {
 #ifdef DEBUG
   Serial.begin(115200);
 #endif
-  Serial2.begin(2400);  // SB,0
+  Serial1.begin(2400);
 
-//  setPowerManagementMode(PM_STOP_MODE);
+  voltage = getVoltage();
 }
 
+int last_tick_counter = 0;
 void loop() {
-  // get command from BLE module  
-  while(Serial2.available() > 0){
-    char c = Serial2.read();
-
-    if (c == '\n') {
-      if (last_command != command) {
-        last_command = command;
-
-        // wake up
-        if (!is_active && !command.startsWith("AOK")) {
-          wake_flag = true;
-        }
-
-#ifdef DEBUG
-        Serial.println(command);
-        Serial.flush();
-#endif
-
-        has_notification = true;
-        command = "";
-      }
-    }
-    else {
-      command += c;
+  // get command from BLE module
+  if (is_active) {
+    int span = tick_counter - last_tick_counter;
+    if ( span > 5000 || span < 0) {
+      checkBLE();
+      last_tick_counter = tick_counter;
     }
   }
-    
+  else {
+    if (tick_counter > 1000) {
+      setOperationClockMode(CLK_HIGH_SPEED_MODE);
+      checkBLE();
+      tick_counter = 0;
+      setOperationClockMode(CLK_LOW_SPEED_MODE);
+    }
+  }
+
   // read key
   unsigned char key = key_read();
 
   // turn display on if the display is off
   if (wake_flag == true) {
+    setOperationClockMode(CLK_HIGH_SPEED_MODE);
     oled.ssd1306WriteCmd(0x0af); // display on
-    tick_counter = 0;
     wake_flag = false;
     is_active = true;
+    tick_counter = 0;
     voltage = getVoltage();
   }
   
   if (is_active) {
     // draw screen if the display is on
-    if (mode_current == MODE_TIME) {
+    if (has_notification) {
+      drawNotification(key);
+    } else if (mode_current == MODE_TIME) {
       drawWatch(key);
     } else if (mode_current == MODE_MENU) {
       drawMenu(key);
@@ -146,62 +138,16 @@ void loop() {
       drawSetTime(key);
     }
     
-    // notification handler
-    if (has_notification) {
-      if (last_command.startsWith("WV,001B,")) {
-        String s = last_command.substring(8);
-        s = s.substring(0,s.length() - 2);
-        
-        String str = "";
-        for (int i=0; i<s.length(); i=i+2) {
-          String tmp = "0x";
-          tmp += s.charAt(i);
-          tmp += s.charAt(i + 1);
-          Serial.println(tmp);
-          
-          char buf[5];
-          tmp.toCharArray(buf, 5);
-          Serial.println(buf);
-
-          long t = strtol(buf, NULL, 16);
-          Serial.println(t);
-          char chr = (char)t;
-          Serial.println(chr);
-
-          str += chr;
-        }
-        
-        // draw notification
-        oled.setCursor(0, 3);
-        oled.set2X();
-        oled.clearToEOL();
-        oled.print(str);
-        beep();
-        delay(100);
-        beep();
-        delay(100);
-        beep();
-        delay(5000);
-        oled.setCursor(0, 3);
-        oled.clearToEOL();
-
-#ifdef DEBUG
-        Serial.println(s);
-#endif
-      }
-      
-      has_notification = false;
-    }
-    
     // sleep if idle
     if(delay_sleep > 0 && tick_counter > DELAY_SLEEPS[delay_sleep]) {
       oled.ssd1306WriteCmd(0x0ae); // display off
       is_active = false;
+      setOperationClockMode(CLK_LOW_SPEED_MODE);
     }
-  }
-
-  // delay
-  for(int i=0;i<100;i++) {
-    _HALT();
+    
+    // delay
+    for(int i=0;i<100;i++) {
+      _HALT();
+    }
   }
 }
