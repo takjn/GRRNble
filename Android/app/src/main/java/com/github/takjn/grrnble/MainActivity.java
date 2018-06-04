@@ -369,22 +369,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-//            case R.id.menuitem_search:
-//                Intent devicelistactivityIntent = new Intent(this, DeviceListActivity.class);
-//                startActivityForResult(devicelistactivityIntent, REQUEST_CONNECTDEVICE);
-//                return true;
-        }
-        return false;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.activity_main, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId()) {
+////            case R.id.menuitem_search:
+////                Intent devicelistactivityIntent = new Intent(this, DeviceListActivity.class);
+////                startActivityForResult(devicelistactivityIntent, REQUEST_CONNECTDEVICE);
+////                return true;
+//        }
+//        return false;
+//    }
 
     @Override
     public void onClick(View v) {
