@@ -14,11 +14,11 @@
     <!-- Label -->
     <string name="device_name">Device Name : </string>
     <string name="device_address">Device Address : </string>
+    <string name="battery_level">Battery Level: </string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
-    <string name="chara1">Chara1 : </string>
-    <string name="chara2">Chara2 : </string>
-    <string name="chara1_notify">Chara1(Notify) : </string>
+    <string name="chara1">Battery Level : </string>
+    <string name="chara2">Private Service : </string>
     <string name="hello">Hello</string>
     <string name="world">World</string>
 

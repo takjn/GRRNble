@@ -25,10 +25,9 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
@@ -38,7 +37,6 @@ import android.content.DialogInterface;
 import android.provider.Settings;
 import android.text.TextUtils;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -48,30 +46,146 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "MainActivity";
 
     // Bluetooth LE Gatt UUID
+    // Battery Service
+    private static final UUID UUID_BATTERY_SERVICE = UUID.fromString("0000180f-0000-1000-8000-00805f9b34fb");
+    private static final UUID UUID_BATTERY_LEVEL_CHARACTERISTIC = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");
+
     // Private Service
-    private static final UUID UUID_SERVICE_PRIVATE = UUID.fromString("3B382559-223F-48CA-81B4-E151598F661B");
-    private static final UUID UUID_CHARACTERISTIC_PRIVATE1 = UUID.fromString("DB5445C4-4A70-4422-87AF-81D35456BEB5");
-    private static final UUID UUID_CHARACTERISTIC_PRIVATE2 = UUID.fromString("B2332443-1DD3-407B-B3E6-5D349CAF5368");
+    private static final UUID UUID_PRIVATE_SERVICE = UUID.fromString("3B382559-223F-48CA-81B4-E151598F661B");
+    private static final UUID UUID_PRIVATE_CHARACTERISTIC = UUID.fromString("B2332443-1DD3-407B-B3E6-5D349CAF5368");
+
     // for Notification
     private static final UUID UUID_NOTIFY = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private static final int REQUEST_ENABLEBLUETOOTH = 1;
-
+    private static final long SCAN_PERIOD = 10000;  // スキャン時間。単位はミリ秒。
     private static BluetoothGatt mBluetoothGatt = null;
     private BluetoothAdapter mBluetoothAdapter;
-    private BluetoothDevice mDevice = null;         // 発見されたデバイス
-
-    private static final long SCAN_PERIOD = 10000;  // スキャン時間。単位はミリ秒。
-
+    private BluetoothDevice mDevice = null;
     private Handler mHandler;                       // UIスレッド操作ハンドラ : 「一定時間後にスキャンをやめる処理」で必要
     private boolean mScanning = false;              // スキャン中かどうかのフラグ
 
     private Button mButtonScan;
     private Button mButtonConnect;
     private Button mButtonDisconnect;
+    private CheckBox mCheckBoxBatteryLevel;
     private DebugFragment mFragmentDebug;
+    // BluetoothGattコールバックオブジェクト
+    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+        // 接続状態変更（connectGatt()の結果として呼ばれる。）
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            if (BluetoothGatt.GATT_SUCCESS != status) {
+                return;
+            }
 
+            if (BluetoothProfile.STATE_CONNECTED == newState) {    // 接続完了
+                mBluetoothGatt.discoverServices();    // サービス検索
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        mButtonDisconnect.setEnabled(true);
+                        mCheckBoxBatteryLevel.setEnabled(true);
+                    }
+                });
+                return;
+            }
+            if (BluetoothProfile.STATE_DISCONNECTED == newState) {    // 切断完了（接続可能範囲から外れて切断された）
+                // 接続可能範囲に入ったら自動接続するために、mBluetoothGatt.connect()を呼び出す。
+                mBluetoothGatt.connect();
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        hideDebugFragment();
+                    }
+                });
+                return;
+            }
+        }
 
+        // サービス検索が完了したときの処理（mBluetoothGatt.discoverServices()の結果として呼ばれる。）
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            if (BluetoothGatt.GATT_SUCCESS != status) {
+                return;
+            }
+
+            // 発見されたサービスのループ
+            for (BluetoothGattService service : gatt.getServices()) {
+                // サービスごとに個別の処理
+                if ((null == service) || (null == service.getUuid())) {
+                    continue;
+                }
+                if (UUID_PRIVATE_SERVICE.equals(service.getUuid())) {    // プライベートサービス
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            showDebugFragment();
+                        }
+                    });
+                    continue;
+                }
+            }
+        }
+
+        // キャラクタリスティックが読み込まれたときの処理
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (BluetoothGatt.GATT_SUCCESS != status) {
+                return;
+            }
+
+            if (UUID_BATTERY_LEVEL_CHARACTERISTIC.equals(characteristic.getUuid())) {
+                int battery_level = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+                final String strChara = String.valueOf(battery_level) + "%";
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        mFragmentDebug.setChara1(strChara);
+                    }
+                });
+                return;
+            }
+
+            if (UUID_PRIVATE_CHARACTERISTIC.equals(characteristic.getUuid())) {
+                final String strChara = characteristic.getStringValue(0);
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        mFragmentDebug.setChara2(strChara);
+                    }
+                });
+                return;
+            }
+        }
+
+        // キャラクタリスティック変更が通知されたときの処理
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            if (UUID_BATTERY_LEVEL_CHARACTERISTIC.equals(characteristic.getUuid())) {
+                int battery_level = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+                final String strChara = String.valueOf(battery_level) + "%";
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        ((TextView) findViewById(R.id.textview_battery_level)).setText(strChara);
+                    }
+                });
+                return;
+            }
+        }
+
+        // キャラクタリスティックが書き込まれたときの処理
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (BluetoothGatt.GATT_SUCCESS != status) {
+                return;
+            }
+
+            if (UUID_PRIVATE_CHARACTERISTIC.equals(characteristic.getUuid())) {
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        mFragmentDebug.enabled(true);
+                    }
+                });
+                return;
+            }
+        }
+    };
     /**
      * Device scan callback
      */
@@ -148,131 +262,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // TODO: Progressを非表示にする
     }
 
-
-    // BluetoothGattコールバックオブジェクト
-    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
-        // 接続状態変更（connectGatt()の結果として呼ばれる。）
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (BluetoothGatt.GATT_SUCCESS != status) {
-                return;
-            }
-
-            if (BluetoothProfile.STATE_CONNECTED == newState) {    // 接続完了
-                mBluetoothGatt.discoverServices();    // サービス検索
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        // GUIアイテムの有効無効の設定
-                        // 切断ボタンを有効にする
-                        mButtonDisconnect.setEnabled(true);
-                    }
-                });
-                return;
-            }
-            if (BluetoothProfile.STATE_DISCONNECTED == newState) {    // 切断完了（接続可能範囲から外れて切断された）
-                // 接続可能範囲に入ったら自動接続するために、mBluetoothGatt.connect()を呼び出す。
-                mBluetoothGatt.connect();
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        hideDebugFragment();
-                    }
-                });
-                return;
-            }
-        }
-
-        // サービス検索が完了したときの処理（mBluetoothGatt.discoverServices()の結果として呼ばれる。）
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (BluetoothGatt.GATT_SUCCESS != status) {
-                return;
-            }
-
-            // 発見されたサービスのループ
-            for (BluetoothGattService service : gatt.getServices()) {
-                // サービスごとに個別の処理
-                if ((null == service) || (null == service.getUuid())) {
-                    continue;
-                }
-                if (UUID_SERVICE_PRIVATE.equals(service.getUuid())) {    // プライベートサービス
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            showDebugFragment();
-                        }
-                    });
-                    continue;
-                }
-            }
-        }
-
-        // キャラクタリスティックが読み込まれたときの処理
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (BluetoothGatt.GATT_SUCCESS != status) {
-                return;
-            }
-
-            if (UUID_CHARACTERISTIC_PRIVATE1.equals(characteristic.getUuid())) {
-                // キャラクタリスティック１：データサイズは、2バイト（数値を想定。0～65,535）
-                byte[] byteChara = characteristic.getValue();
-                ByteBuffer bb = ByteBuffer.wrap(byteChara);
-                final String strChara = String.valueOf(bb.getShort());
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        mFragmentDebug.setChara1(strChara);
-                    }
-                });
-                return;
-            }
-
-            if (UUID_CHARACTERISTIC_PRIVATE2.equals(characteristic.getUuid())) {
-                // キャラクタリスティック２：データサイズは、8バイト（文字列を想定。半角文字8文字）
-                final String strChara = characteristic.getStringValue(0);
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        mFragmentDebug.setChara2(strChara);
-                    }
-                });
-                return;
-            }
-        }
-
-        // キャラクタリスティック変更が通知されたときの処理
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            if (UUID_CHARACTERISTIC_PRIVATE1.equals(characteristic.getUuid())) {
-                // キャラクタリスティック１：データサイズは、2バイト（数値を想定。0～65,535）
-                byte[] byteChara = characteristic.getValue();
-                ByteBuffer bb = ByteBuffer.wrap(byteChara);
-                final String strChara = String.valueOf(bb.getShort());
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        mFragmentDebug.setNotifyChara1(strChara);
-                    }
-                });
-                return;
-            }
-        }
-
-        // キャラクタリスティックが書き込まれたときの処理
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (BluetoothGatt.GATT_SUCCESS != status) {
-                return;
-            }
-            // キャラクタリスティックごとに個別の処理
-            if (UUID_CHARACTERISTIC_PRIVATE2.equals(characteristic.getUuid())) {
-                // キャラクタリスティック２：データサイズは、8バイト（文字列を想定。半角文字8文字）
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        mFragmentDebug.enabled(true);
-                    }
-                });
-                return;
-            }
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
@@ -287,6 +276,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonConnect.setOnClickListener(this);
         mButtonDisconnect = (Button) findViewById(R.id.button_disconnect);
         mButtonDisconnect.setOnClickListener(this);
+        mCheckBoxBatteryLevel = (CheckBox) findViewById(R.id.checkbox_battery_level);
+        mCheckBoxBatteryLevel.setOnClickListener(this);
 
         FragmentManager fragmentManager = getFragmentManager();
         mFragmentDebug = (DebugFragment) fragmentManager.findFragmentById(R.id.fragment_debug);
@@ -320,6 +311,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonScan.setEnabled(true);
         mButtonConnect.setEnabled(false);
         mButtonDisconnect.setEnabled(false);
+        mCheckBoxBatteryLevel.setEnabled(false);
         hideDebugFragment();
     }
 
@@ -403,6 +395,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             disconnect();
             return;
         }
+        if (mCheckBoxBatteryLevel.getId() == v.getId()) {
+            setCharacteristicNotification(UUID_BATTERY_SERVICE, UUID_BATTERY_LEVEL_CHARACTERISTIC, mCheckBoxBatteryLevel.isChecked());
+            return;
+        }
     }
 
     /**
@@ -435,6 +431,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mButtonConnect.setEnabled(true);
         mButtonDisconnect.setEnabled(false);
+        mCheckBoxBatteryLevel.setEnabled(false);
         hideDebugFragment();
     }
 
@@ -492,7 +489,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private boolean isNotificationServiceEnabled() {
         String pkgName = getPackageName();
-        final String flat = Settings.Secure.getString(getContentResolver(),"enabled_notification_listeners");
+        final String flat = Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");
         if (!TextUtils.isEmpty(flat)) {
             final String[] names = flat.split(":");
             for (int i = 0; i < names.length; i++) {
@@ -540,24 +537,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * DebugListener.
      */
     @Override
-    public void onWriteCharacteristic2(String message) {
+    public void onWritePrivateCharacteristic(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-        writeCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2, message);
+        writeCharacteristic(UUID_PRIVATE_SERVICE, UUID_PRIVATE_CHARACTERISTIC, message);
     }
 
     @Override
-    public void onReadCharacteristic1() {
-        readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1);
+    public void onReadBatteryLevelCharacteristic() {
+        readCharacteristic(UUID_BATTERY_SERVICE, UUID_BATTERY_LEVEL_CHARACTERISTIC);
     }
 
     @Override
-    public void onReadCharacteristic2() {
-        readCharacteristic(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE2);
-    }
-
-    @Override
-    public void onSetCharacteristicNotification1(boolean value) {
-        setCharacteristicNotification(UUID_SERVICE_PRIVATE, UUID_CHARACTERISTIC_PRIVATE1, value);
+    public void onReadPrivateCharacteristic() {
+        readCharacteristic(UUID_PRIVATE_SERVICE, UUID_PRIVATE_CHARACTERISTIC);
     }
 
     /**
@@ -580,7 +572,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (null != mBluetoothGatt) {
                 Log.d(TAG, "send message via BLE: " + message);
 
-                BluetoothGattCharacteristic blechar = mBluetoothGatt.getService(UUID_SERVICE_PRIVATE).getCharacteristic(UUID_CHARACTERISTIC_PRIVATE2);
+                BluetoothGattCharacteristic blechar = mBluetoothGatt.getService(UUID_PRIVATE_SERVICE).getCharacteristic(UUID_PRIVATE_CHARACTERISTIC);
                 blechar.setValue(message);
                 mBluetoothGatt.writeCharacteristic(blechar);
             }

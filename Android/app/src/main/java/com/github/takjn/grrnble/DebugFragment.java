@@ -15,10 +15,8 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
 
     private TextView mTextViewReadChara1;
     private TextView mTextViewReadChara2;
-    private TextView mTextViewNotifyChara1;
     private Button mButtonReadChara1;
     private Button mButtonReadChara2;
-    private CheckBox mCheckBoxNotifyChara1;
     private Button mButtonWriteHello;
     private Button mButtonWriteWorld;
 
@@ -36,16 +34,12 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
 
         mTextViewReadChara1 = ((TextView) view.findViewById(R.id.textview_readchara1));
         mTextViewReadChara2 = ((TextView) view.findViewById(R.id.textview_readchara2));
-        mTextViewNotifyChara1 = ((TextView) view.findViewById(R.id.textview_notifychara1));
 
         mButtonReadChara1 = (Button) view.findViewById(R.id.button_readchara1);
         mButtonReadChara1.setOnClickListener(this);
 
         mButtonReadChara2 = (Button) view.findViewById(R.id.button_readchara2);
         mButtonReadChara2.setOnClickListener(this);
-
-        mCheckBoxNotifyChara1 = (CheckBox) view.findViewById(R.id.checkbox_notifychara1);
-        mCheckBoxNotifyChara1.setOnClickListener(this);
 
         mButtonWriteHello = (Button) view.findViewById(R.id.button_writehello);
         mButtonWriteHello.setOnClickListener(this);
@@ -76,25 +70,21 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
         }
 
         if (mButtonReadChara1.getId() == v.getId()) {
-            mDebugListener.onReadCharacteristic1();
+            mDebugListener.onReadBatteryLevelCharacteristic();
             return;
         }
         if (mButtonReadChara2.getId() == v.getId()) {
-            mDebugListener.onReadCharacteristic2();
-            return;
-        }
-        if (mCheckBoxNotifyChara1.getId() == v.getId()) {
-            mDebugListener.onSetCharacteristicNotification1(mCheckBoxNotifyChara1.isChecked());
+            mDebugListener.onReadPrivateCharacteristic();
             return;
         }
         if (mButtonWriteHello.getId() == v.getId()) {
             this.enabled(false);
-            mDebugListener.onWriteCharacteristic2("Hello");
+            mDebugListener.onWritePrivateCharacteristic("Hello");
             return;
         }
         if (mButtonWriteWorld.getId() == v.getId()) {
             this.enabled(false);
-            mDebugListener.onWriteCharacteristic2("World");
+            mDebugListener.onWritePrivateCharacteristic("World");
             return;
         }
     }
@@ -112,18 +102,12 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
         mTextViewReadChara2.setText(value);
     }
 
-    public void setNotifyChara1(String value) {
-        mTextViewNotifyChara1.setText(value);
-    }
-
     public interface DebugListener {
-        public void onReadCharacteristic1();
+        public void onReadBatteryLevelCharacteristic();
 
-        public void onSetCharacteristicNotification1(boolean value);
+        public void onReadPrivateCharacteristic();
 
-        public void onReadCharacteristic2();
-
-        public void onWriteCharacteristic2(String message);
+        public void onWritePrivateCharacteristic(String message);
     }
 
 
