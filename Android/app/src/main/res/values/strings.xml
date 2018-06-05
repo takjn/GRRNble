@@ -30,7 +30,6 @@
     <string name="notification_listener_service_explanation">Please turn the notification listener service on.</string>
 
     <!-- Menu -->
-    <string name="scan">Scan</string>
-    <string name="stop">Stop</string>
+    <string name="debug">Debug</string>
 
 </resources>

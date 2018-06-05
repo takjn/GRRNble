@@ -25,6 +25,8 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -107,29 +109,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        // サービス検索が完了したときの処理（mBluetoothGatt.discoverServices()の結果として呼ばれる。）
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (BluetoothGatt.GATT_SUCCESS != status) {
-                return;
-            }
-
-            // 発見されたサービスのループ
-            for (BluetoothGattService service : gatt.getServices()) {
-                // サービスごとに個別の処理
-                if ((null == service) || (null == service.getUuid())) {
-                    continue;
-                }
-                if (UUID_PRIVATE_SERVICE.equals(service.getUuid())) {    // プライベートサービス
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            showDebugFragment();
-                        }
-                    });
-                    continue;
-                }
-            }
-        }
+//        // サービス検索が完了したときの処理（mBluetoothGatt.discoverServices()の結果として呼ばれる。）
+//        @Override
+//        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+//            if (BluetoothGatt.GATT_SUCCESS != status) {
+//                return;
+//            }
+//
+//            // 発見されたサービスのループ
+//            for (BluetoothGattService service : gatt.getServices()) {
+//                // サービスごとに個別の処理
+//                if ((null == service) || (null == service.getUuid())) {
+//                    continue;
+//                }
+//                if (UUID_PRIVATE_SERVICE.equals(service.getUuid())) {    // プライベートサービス
+//                    runOnUiThread(new Runnable() {
+//                        public void run() {
+//                            showDebugFragment();
+//                        }
+//                    });
+//                    continue;
+//                }
+//            }
+//        }
 
         // キャラクタリスティックが読み込まれたときの処理
         @Override
@@ -383,22 +385,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.activity_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()) {
-////            case R.id.menuitem_search:
-////                Intent devicelistactivityIntent = new Intent(this, DeviceListActivity.class);
-////                startActivityForResult(devicelistactivityIntent, REQUEST_CONNECTDEVICE);
-////                return true;
-//        }
-//        return false;
-//    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_checkbox) {
+            // チェックボックスの状態変更を行う
+            item.setChecked(!item.isChecked());
+
+            // 反映後の状態を取得する
+            boolean checked = item.isChecked();
+            if (checked) {
+                showDebugFragment();
+            } else {
+                hideDebugFragment();
+            }
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public void onClick(View v) {
@@ -567,7 +577,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     @Override
     public void onWritePrivateCharacteristic(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         writeCharacteristic(UUID_PRIVATE_SERVICE, UUID_PRIVATE_CHARACTERISTIC, message);
     }
 
@@ -596,7 +606,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String body = intent.getStringExtra("body");
             String message = title + "," + body;
 
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+//            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
 
             if (null != mBluetoothGatt) {
                 Log.d(TAG, "send message via BLE: " + message);
