@@ -454,7 +454,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonConnect.setEnabled(true);
         mButtonDisconnect.setEnabled(false);
         mCheckBoxBatteryLevel.setEnabled(false);
+        mCheckBoxBatteryLevel.setChecked(false);
         mCheckBoxTemperature.setEnabled(false);
+        mCheckBoxTemperature.setChecked(false);
         hideDebugFragment();
     }
 
