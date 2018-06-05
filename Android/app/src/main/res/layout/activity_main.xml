@@ -151,6 +151,13 @@
     </LinearLayout>
 
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible" />
+
     <fragment
         android:id="@+id/fragment_debug"
         android:name="com.github.takjn.grrnble.DebugFragment"

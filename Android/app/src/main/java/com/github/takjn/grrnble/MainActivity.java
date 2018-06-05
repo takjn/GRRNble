@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mButtonDisconnect;
     private CheckBox mCheckBoxBatteryLevel;
     private CheckBox mCheckBoxTemperature;
+    private ProgressBar mProgressBar;
     private DebugFragment mFragmentDebug;
 
     // BluetoothGattコールバックオブジェクト
@@ -248,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mScanning = true;
         scanner.startScan(scanFilterList, scanSettings, mLeScanCallback);
 
-        // TODO: Progressを表示する
+        mProgressBar.setVisibility(ProgressBar.VISIBLE);
     }
 
     // スキャンの停止
@@ -274,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, R.string.device_is_not_found, Toast.LENGTH_SHORT).show();
         }
 
-        // TODO: Progressを非表示にする
+        mProgressBar.setVisibility(ProgressBar.GONE);
     }
 
     @Override
@@ -295,6 +297,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCheckBoxBatteryLevel.setOnClickListener(this);
         mCheckBoxTemperature = (CheckBox) findViewById(R.id.checkbox_temperature);
         mCheckBoxTemperature.setOnClickListener(this);
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         FragmentManager fragmentManager = getFragmentManager();
         mFragmentDebug = (DebugFragment) fragmentManager.findFragmentById(R.id.fragment_debug);
@@ -330,6 +333,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonDisconnect.setEnabled(false);
         mCheckBoxBatteryLevel.setEnabled(false);
         mCheckBoxTemperature.setEnabled(false);
+        mProgressBar.setVisibility(ProgressBar.GONE);
         hideDebugFragment();
     }
 
