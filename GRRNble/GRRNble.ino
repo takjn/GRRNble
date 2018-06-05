@@ -39,6 +39,8 @@ boolean is_active = true;
 #define MAX_VOLTAGE 3.3
 int voltage = 0;
 
+double temperature = getTemperature(TEMP_MODE_CELSIUS);
+
 // variables for watch
 RTC_TIMETYPE datetime = {15, 12, 31, 2, 23, 59, 30};
 
@@ -123,7 +125,6 @@ void loop() {
     wake_flag = false;
     is_active = true;
     tick_counter = 0;
-    voltage = getVoltage();
   }
   
   if (is_active) {

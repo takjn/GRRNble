@@ -8,10 +8,13 @@ void checkBLE() {
 #endif
 
   String command = "";
+  voltage = getVoltage();
+  temperature = getAvgTempareture();
   
   // trash garbage
   while(Serial1.available() > 0) {
     char c = Serial1.read();
+    delay(5);
   }
   
   // send read command and wait
@@ -25,7 +28,7 @@ void checkBLE() {
     char c = Serial1.read();
     
     if (c == '\n') {
-      if (last_command != command && !command.startsWith("AOK")) {
+      if (last_command != command && !command.startsWith("AOK") && !command.startsWith("00")) {
         last_command = command;
         has_notification = true;
 
