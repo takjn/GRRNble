@@ -15,6 +15,7 @@
     <string name="device_name">Device Name : </string>
     <string name="device_address">Device Address : </string>
     <string name="battery_level">Battery Level: </string>
+    <string name="temperature">Temperature: </string>
     <string name="connect">Connect</string>
     <string name="disconnect">Disconnect</string>
     <string name="chara1">Battery Level : </string>

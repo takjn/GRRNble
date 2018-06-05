@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Private Service
     private static final UUID UUID_PRIVATE_SERVICE = UUID.fromString("3B382559-223F-48CA-81B4-E151598F661B");
+    private static final UUID UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC = UUID.fromString("DB5445C4-4A70-4422-87AF-81D35456BEB5");
     private static final UUID UUID_PRIVATE_CHARACTERISTIC = UUID.fromString("B2332443-1DD3-407B-B3E6-5D349CAF5368");
 
     // for Notification
@@ -69,7 +70,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mButtonConnect;
     private Button mButtonDisconnect;
     private CheckBox mCheckBoxBatteryLevel;
+    private CheckBox mCheckBoxTemperature;
     private DebugFragment mFragmentDebug;
+
     // BluetoothGattコールバックオブジェクト
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         // 接続状態変更（connectGatt()の結果として呼ばれる。）
@@ -85,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void run() {
                         mButtonDisconnect.setEnabled(true);
                         mCheckBoxBatteryLevel.setEnabled(true);
+                        mCheckBoxTemperature.setEnabled(true);
                     }
                 });
                 return;
@@ -163,6 +167,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 runOnUiThread(new Runnable() {
                     public void run() {
                         ((TextView) findViewById(R.id.textview_battery_level)).setText(strChara);
+                    }
+                });
+                return;
+            }
+
+            if (UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC.equals(characteristic.getUuid())) {
+                int temperature = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT8, 0);
+                final String strChara = String.valueOf(temperature) + "℃";
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        ((TextView) findViewById(R.id.textview_temperature)).setText(strChara);
                     }
                 });
                 return;
@@ -278,6 +293,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonDisconnect.setOnClickListener(this);
         mCheckBoxBatteryLevel = (CheckBox) findViewById(R.id.checkbox_battery_level);
         mCheckBoxBatteryLevel.setOnClickListener(this);
+        mCheckBoxTemperature = (CheckBox) findViewById(R.id.checkbox_temperature);
+        mCheckBoxTemperature.setOnClickListener(this);
 
         FragmentManager fragmentManager = getFragmentManager();
         mFragmentDebug = (DebugFragment) fragmentManager.findFragmentById(R.id.fragment_debug);
@@ -312,6 +329,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonConnect.setEnabled(false);
         mButtonDisconnect.setEnabled(false);
         mCheckBoxBatteryLevel.setEnabled(false);
+        mCheckBoxTemperature.setEnabled(false);
         hideDebugFragment();
     }
 
@@ -399,6 +417,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             setCharacteristicNotification(UUID_BATTERY_SERVICE, UUID_BATTERY_LEVEL_CHARACTERISTIC, mCheckBoxBatteryLevel.isChecked());
             return;
         }
+        if (mCheckBoxTemperature.getId() == v.getId()) {
+            setCharacteristicNotification(UUID_PRIVATE_SERVICE, UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC, mCheckBoxTemperature.isChecked());
+            return;
+        }
     }
 
     /**
@@ -432,6 +454,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonConnect.setEnabled(true);
         mButtonDisconnect.setEnabled(false);
         mCheckBoxBatteryLevel.setEnabled(false);
+        mCheckBoxTemperature.setEnabled(false);
         hideDebugFragment();
     }
 
