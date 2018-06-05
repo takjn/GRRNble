@@ -6,4 +6,9 @@
         android:checkable="true"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_timesync"
+        android:title="@string/time_sync"
+        android:checkable="false"
+        app:showAsAction="never" />
+
 </menu>

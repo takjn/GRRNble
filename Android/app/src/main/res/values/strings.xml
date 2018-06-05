@@ -31,5 +31,6 @@
 
     <!-- Menu -->
     <string name="debug">Debug</string>
+    <string name="time_sync">Time Sync</string>
 
 </resources>

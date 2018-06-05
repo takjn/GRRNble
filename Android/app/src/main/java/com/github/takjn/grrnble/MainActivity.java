@@ -40,7 +40,9 @@ import android.content.DialogInterface;
 import android.provider.Settings;
 import android.text.TextUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -405,6 +407,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 hideDebugFragment();
             }
+            return true;
+        }
+        if (id == R.id.action_timesync) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yy,MM,dd,F,HH,mm");
+            Calendar cl = Calendar.getInstance();
+            String datetime = "DT," + sdf.format(cl.getTime());
+
+            if (mBluetoothGatt != null) {
+                Log.d(TAG, datetime);
+                writeCharacteristic(UUID_PRIVATE_SERVICE, UUID_PRIVATE_CHARACTERISTIC, datetime);
+            }
+
             return true;
         }
         return super.onOptionsItemSelected(item);
