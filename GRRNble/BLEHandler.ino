@@ -57,17 +57,6 @@ void drawNotification(unsigned char key) {
 
     return;
   }
-  
-  // draw current time
-  rtc_get_time(&datetime);
-  oled.set1X();
-  oled.setCursor(0, 7);
-  printWithZero(datetime.hour);
-  oled.print(':');
-  printWithZero(datetime.min);
-  oled.setCursor(56, 7);
-  printWithZero(datetime.second);
-  oled.clearToEOL();
 
   String message = decodeValue(last_command);
   String title = "";
@@ -80,6 +69,36 @@ void drawNotification(unsigned char key) {
   else {
     title = message;
   }
+  
+  if (title == "DT") {
+    // Time sync command
+    int year = body.substring(0, 2).toInt() + 2000;
+    int month = body.substring(3, 5).toInt();
+    int day = body.substring(6, 8).toInt();
+    int week = body.substring(9, 10).toInt();
+    int hour = body.substring(11, 13).toInt();
+    int minute = body.substring(14, 16).toInt();
+
+    datetime = {year, month, day, week, hour, minute, 00};
+    rtc_set_time(&datetime);
+    
+    has_notification = false;
+    last_nofication = "";
+    oled.clear();
+
+    return;
+  }
+  
+  // draw current time
+  rtc_get_time(&datetime);
+  oled.set1X();
+  oled.setCursor(0, 7);
+  printWithZero(datetime.hour);
+  oled.print(':');
+  printWithZero(datetime.min);
+  oled.setCursor(56, 7);
+  printWithZero(datetime.second);
+  oled.clearToEOL();
 
   oled.set1X();
   oled.setCursor(0, 0);

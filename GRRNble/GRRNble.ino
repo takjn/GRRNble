@@ -6,7 +6,7 @@
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
 
-//#define DEBUG 1
+#define DEBUG 1
 
 // setting for SSD1306
 SSD1306AsciiWire oled;
@@ -29,7 +29,7 @@ const int DISPLAY_CONTRASTS[4] = { 0, 50, 128, 255 };  // 4 steps contrast
 int display_contrast = 3;
 
 // settings for power saving
-const unsigned long DELAY_SLEEPS[4] = {0, 5000, 10000, 15000};  // sleep (millisec, 0=always on)
+const unsigned long DELAY_SLEEPS[4] = {0, 7000, 10000, 15000};  // sleep (millisec, 0=always on)
 int delay_sleep = 1;
 unsigned long int tick_counter = 0;
 boolean wake_flag = false;
