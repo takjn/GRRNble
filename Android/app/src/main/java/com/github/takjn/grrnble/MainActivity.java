@@ -25,9 +25,12 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
@@ -37,7 +40,9 @@ import android.content.DialogInterface;
 import android.provider.Settings;
 import android.text.TextUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Private Service
     private static final UUID UUID_PRIVATE_SERVICE = UUID.fromString("3B382559-223F-48CA-81B4-E151598F661B");
+    private static final UUID UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC = UUID.fromString("DB5445C4-4A70-4422-87AF-81D35456BEB5");
     private static final UUID UUID_PRIVATE_CHARACTERISTIC = UUID.fromString("B2332443-1DD3-407B-B3E6-5D349CAF5368");
 
     // for Notification
@@ -69,7 +75,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mButtonConnect;
     private Button mButtonDisconnect;
     private CheckBox mCheckBoxBatteryLevel;
+    private CheckBox mCheckBoxTemperature;
+    private ProgressBar mProgressBar;
     private DebugFragment mFragmentDebug;
+
     // BluetoothGattコールバックオブジェクト
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         // 接続状態変更（connectGatt()の結果として呼ばれる。）
@@ -85,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void run() {
                         mButtonDisconnect.setEnabled(true);
                         mCheckBoxBatteryLevel.setEnabled(true);
+                        mCheckBoxTemperature.setEnabled(true);
                     }
                 });
                 return;
@@ -101,29 +111,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        // サービス検索が完了したときの処理（mBluetoothGatt.discoverServices()の結果として呼ばれる。）
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (BluetoothGatt.GATT_SUCCESS != status) {
-                return;
-            }
-
-            // 発見されたサービスのループ
-            for (BluetoothGattService service : gatt.getServices()) {
-                // サービスごとに個別の処理
-                if ((null == service) || (null == service.getUuid())) {
-                    continue;
-                }
-                if (UUID_PRIVATE_SERVICE.equals(service.getUuid())) {    // プライベートサービス
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            showDebugFragment();
-                        }
-                    });
-                    continue;
-                }
-            }
-        }
+//        // サービス検索が完了したときの処理（mBluetoothGatt.discoverServices()の結果として呼ばれる。）
+//        @Override
+//        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+//            if (BluetoothGatt.GATT_SUCCESS != status) {
+//                return;
+//            }
+//
+//            // 発見されたサービスのループ
+//            for (BluetoothGattService service : gatt.getServices()) {
+//                // サービスごとに個別の処理
+//                if ((null == service) || (null == service.getUuid())) {
+//                    continue;
+//                }
+//                if (UUID_PRIVATE_SERVICE.equals(service.getUuid())) {    // プライベートサービス
+//                    runOnUiThread(new Runnable() {
+//                        public void run() {
+//                            showDebugFragment();
+//                        }
+//                    });
+//                    continue;
+//                }
+//            }
+//        }
 
         // キャラクタリスティックが読み込まれたときの処理
         @Override
@@ -163,6 +173,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 runOnUiThread(new Runnable() {
                     public void run() {
                         ((TextView) findViewById(R.id.textview_battery_level)).setText(strChara);
+                    }
+                });
+                return;
+            }
+
+            if (UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC.equals(characteristic.getUuid())) {
+                int temperature = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT8, 0);
+                final String strChara = String.valueOf(temperature) + "℃";
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        ((TextView) findViewById(R.id.textview_temperature)).setText(strChara);
                     }
                 });
                 return;
@@ -233,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mScanning = true;
         scanner.startScan(scanFilterList, scanSettings, mLeScanCallback);
 
-        // TODO: Progressを表示する
+        mProgressBar.setVisibility(ProgressBar.VISIBLE);
     }
 
     // スキャンの停止
@@ -259,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, R.string.device_is_not_found, Toast.LENGTH_SHORT).show();
         }
 
-        // TODO: Progressを非表示にする
+        mProgressBar.setVisibility(ProgressBar.GONE);
     }
 
     @Override
@@ -278,6 +299,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonDisconnect.setOnClickListener(this);
         mCheckBoxBatteryLevel = (CheckBox) findViewById(R.id.checkbox_battery_level);
         mCheckBoxBatteryLevel.setOnClickListener(this);
+        mCheckBoxTemperature = (CheckBox) findViewById(R.id.checkbox_temperature);
+        mCheckBoxTemperature.setOnClickListener(this);
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         FragmentManager fragmentManager = getFragmentManager();
         mFragmentDebug = (DebugFragment) fragmentManager.findFragmentById(R.id.fragment_debug);
@@ -312,6 +336,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonConnect.setEnabled(false);
         mButtonDisconnect.setEnabled(false);
         mCheckBoxBatteryLevel.setEnabled(false);
+        mCheckBoxTemperature.setEnabled(false);
+        mProgressBar.setVisibility(ProgressBar.GONE);
         hideDebugFragment();
     }
 
@@ -361,22 +387,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.activity_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()) {
-////            case R.id.menuitem_search:
-////                Intent devicelistactivityIntent = new Intent(this, DeviceListActivity.class);
-////                startActivityForResult(devicelistactivityIntent, REQUEST_CONNECTDEVICE);
-////                return true;
-//        }
-//        return false;
-//    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_checkbox) {
+            // チェックボックスの状態変更を行う
+            item.setChecked(!item.isChecked());
+
+            // 反映後の状態を取得する
+            boolean checked = item.isChecked();
+            if (checked) {
+                showDebugFragment();
+            } else {
+                hideDebugFragment();
+            }
+            return true;
+        }
+        if (id == R.id.action_timesync) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yy,MM,dd,F,HH,mm");
+            Calendar cl = Calendar.getInstance();
+            String datetime = "DT," + sdf.format(cl.getTime());
+
+            if (mBluetoothGatt != null) {
+                Log.d(TAG, datetime);
+                writeCharacteristic(UUID_PRIVATE_SERVICE, UUID_PRIVATE_CHARACTERISTIC, datetime);
+            }
+
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public void onClick(View v) {
@@ -397,6 +443,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (mCheckBoxBatteryLevel.getId() == v.getId()) {
             setCharacteristicNotification(UUID_BATTERY_SERVICE, UUID_BATTERY_LEVEL_CHARACTERISTIC, mCheckBoxBatteryLevel.isChecked());
+            return;
+        }
+        if (mCheckBoxTemperature.getId() == v.getId()) {
+            setCharacteristicNotification(UUID_PRIVATE_SERVICE, UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC, mCheckBoxTemperature.isChecked());
             return;
         }
     }
@@ -432,6 +482,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButtonConnect.setEnabled(true);
         mButtonDisconnect.setEnabled(false);
         mCheckBoxBatteryLevel.setEnabled(false);
+        mCheckBoxBatteryLevel.setChecked(false);
+        mCheckBoxTemperature.setEnabled(false);
+        mCheckBoxTemperature.setChecked(false);
         hideDebugFragment();
     }
 
@@ -538,7 +591,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     @Override
     public void onWritePrivateCharacteristic(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         writeCharacteristic(UUID_PRIVATE_SERVICE, UUID_PRIVATE_CHARACTERISTIC, message);
     }
 
@@ -567,7 +620,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String body = intent.getStringExtra("body");
             String message = title + "," + body;
 
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+//            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
 
             if (null != mBluetoothGatt) {
                 Log.d(TAG, "send message via BLE: " + message);
