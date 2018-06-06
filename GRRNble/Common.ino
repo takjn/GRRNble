@@ -75,7 +75,7 @@ static double getAvgTempareture() {
   double ret = temperature * 0.95 + getTemperature(TEMP_MODE_CELSIUS) * 0.05;
   int t = (int)ret;
   
-  String s = "SHW,0018," + String(ret, HEX); 
+  String s = "SHW,0018," + String(t, HEX); 
   Serial1.println(s);
   Serial1.flush();
 
