@@ -6,7 +6,7 @@
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
 
-#define DEBUG 1
+//#define DEBUG 1
 
 // setting for SSD1306
 SSD1306AsciiWire oled;
@@ -31,7 +31,6 @@ int display_contrast = 3;
 // settings for power saving
 const unsigned long DELAY_SLEEPS[4] = {0, 7000, 10000, 15000};  // sleep (millisec, 0=always on)
 int delay_sleep = 1;
-unsigned long int tick_counter = 0;
 boolean wake_flag = false;
 boolean is_active = true;
 
@@ -59,9 +58,8 @@ uint8_t mode_current = MODE_TIME;
 // Notification handler
 boolean has_notification = false;
 
-void tick_handler(unsigned long u32ms) {
-  tick_counter++;
-}
+unsigned int last_check_millis = 0;
+unsigned int last_millis = 0;
 
 void setup() {
   // initialize RTC
@@ -85,7 +83,6 @@ void setup() {
   pinMode(KEY_PREV_PIN, INPUT_PULLUP);
   pinMode(KEY_SELECT_PIN, INPUT_PULLUP);
   pinMode(KEY_NEXT_PIN, INPUT_PULLUP);
-  attachIntervalTimerHandler(tick_handler);
   
   // setup for RN4020
 #ifdef DEBUG
@@ -94,25 +91,40 @@ void setup() {
   Serial1.begin(2400);
 
   voltage = getVoltage();
+  last_millis = millis();
 }
 
-int last_tick_counter = 0;
 void loop() {
   // get command from BLE module
   if (is_active) {
-    int span = tick_counter - last_tick_counter;
+    int span = millis() - last_check_millis;
     if ( span > 5000 || span < 0) {
       checkBLE();
-      last_tick_counter = tick_counter;
+      last_check_millis = millis();
+    }
+
+    // sleep if idle
+    if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
+      oled.ssd1306WriteCmd(0x0ae); // display off
+      is_active = false;
+      setOperationClockMode(CLK_LOW_SPEED_MODE);
     }
   }
   else {
-    if (tick_counter > 1000) {
+    int span = millis() - last_check_millis;
+    if ( span > 1000 || span < 0) {
       setOperationClockMode(CLK_HIGH_SPEED_MODE);
       checkBLE();
-      tick_counter = 0;
+      last_check_millis = millis();
       setOperationClockMode(CLK_LOW_SPEED_MODE);
     }
+
+//    if (millis() > 1000) {
+//      setOperationClockMode(CLK_HIGH_SPEED_MODE);
+//      checkBLE();
+//      last_check_millis = millis();
+//      setOperationClockMode(CLK_LOW_SPEED_MODE);
+//    }
   }
 
   // read key
@@ -124,7 +136,7 @@ void loop() {
     oled.ssd1306WriteCmd(0x0af); // display on
     wake_flag = false;
     is_active = true;
-    tick_counter = 0;
+    last_millis = millis();
   }
   
   if (is_active) {
@@ -137,13 +149,6 @@ void loop() {
       drawMenu(key);
     } else if (mode_current == MODE_SETTIME) {
       drawSetTime(key);
-    }
-    
-    // sleep if idle
-    if(delay_sleep > 0 && tick_counter > DELAY_SLEEPS[delay_sleep]) {
-      oled.ssd1306WriteCmd(0x0ae); // display off
-      is_active = false;
-      setOperationClockMode(CLK_LOW_SPEED_MODE);
     }
     
     // delay
