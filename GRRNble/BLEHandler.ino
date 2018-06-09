@@ -38,10 +38,10 @@ void checkBLE() {
         }
       }
 
-#ifdef DEBUG
-      Serial.println(command);
-      Serial.flush();
-#endif
+//#ifdef DEBUG
+//      Serial.println(command);
+//      Serial.flush();
+//#endif
     }
     else {
       command += c;

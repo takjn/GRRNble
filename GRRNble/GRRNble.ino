@@ -6,7 +6,7 @@
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
 
-//#define DEBUG 1
+#define DEBUG 1
 
 // setting for SSD1306
 SSD1306AsciiWire oled;
@@ -58,8 +58,8 @@ uint8_t mode_current = MODE_TIME;
 // Notification handler
 boolean has_notification = false;
 
-unsigned int last_check_millis = 0;
-unsigned int last_millis = 0;
+unsigned long last_check_millis = 0;
+unsigned long last_millis = 0;
 
 void setup() {
   // initialize RTC
@@ -95,19 +95,20 @@ void setup() {
 }
 
 void loop() {
+  unsigned long current = millis();
   // get command from BLE module
   if (is_active) {
-    int span = millis() - last_check_millis;
+    int span = current - last_check_millis;
     if ( span > 5000 || span < 0) {
       checkBLE();
-      last_check_millis = millis();
+      last_check_millis = current;
     }
 
     // sleep if idle
-    if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
+    if(delay_sleep > 0 && (current - last_millis) > DELAY_SLEEPS[delay_sleep]) {
 #ifdef DEBUG
       Serial.println("-----------");
-      Serial.println(millis());
+      Serial.println(current);
       Serial.println(last_millis);
       Serial.println("-----------");
       Serial.flush();
@@ -119,11 +120,11 @@ void loop() {
     }
   }
   else {
-    int span = millis() - last_check_millis;
+    int span = current - last_check_millis;
     if ( span > 1500 || span < 0) {
       setOperationClockMode(CLK_HIGH_SPEED_MODE);
       checkBLE();
-      last_check_millis = millis();
+      last_check_millis = current;
       setOperationClockMode(CLK_LOW_SPEED_MODE);
     }
   }
@@ -137,7 +138,7 @@ void loop() {
     oled.ssd1306WriteCmd(0x0af); // display on
     wake_flag = false;
     is_active = true;
-    last_millis = millis();
+    last_millis = current;
   }
   
   if (is_active) {
