@@ -14,10 +14,10 @@ SSD1306AsciiWire oled;
 
 // settings for I/O pins
 #define BUZZER_PIN      10          // pin for buzzer
-#define KEY_PREV_PIN    4           // pin for previous button
-#define KEY_SELECT_PIN  3           // pin for select button
-#define KEY_NEXT_PIN    2           // pin for next button
-#define VOLTAGE_OUT_PIN A7          // pin for voltage measurement
+#define KEY_PREV_PIN    3           // pin for previous button
+#define KEY_SELECT_PIN  2           // pin for select button
+#define KEY_NEXT_PIN    4           // pin for next button
+#define VOLTAGE_OUT_PIN A1          // pin for voltage measurement
 #define VOLTAGE_CHK_PIN A0          // pin for voltage measurement
 
 // settings for buzzer
@@ -105,6 +105,14 @@ void loop() {
 
     // sleep if idle
     if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
+#ifdef DEBUG
+      Serial.println("-----------");
+      Serial.println(millis());
+      Serial.println(last_millis);
+      Serial.println("-----------");
+      Serial.flush();
+#endif
+
       oled.ssd1306WriteCmd(0x0ae); // display off
       is_active = false;
       setOperationClockMode(CLK_LOW_SPEED_MODE);
@@ -112,19 +120,12 @@ void loop() {
   }
   else {
     int span = millis() - last_check_millis;
-    if ( span > 1000 || span < 0) {
+    if ( span > 1500 || span < 0) {
       setOperationClockMode(CLK_HIGH_SPEED_MODE);
       checkBLE();
       last_check_millis = millis();
       setOperationClockMode(CLK_LOW_SPEED_MODE);
     }
-
-//    if (millis() > 1000) {
-//      setOperationClockMode(CLK_HIGH_SPEED_MODE);
-//      checkBLE();
-//      last_check_millis = millis();
-//      setOperationClockMode(CLK_LOW_SPEED_MODE);
-//    }
   }
 
   // read key

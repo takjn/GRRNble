@@ -2,10 +2,10 @@ String last_command = "";
 String last_nofication = "";
 
 void checkBLE() {
-#ifdef DEBUG      
-  Serial.println(tick_counter);
-  Serial.flush();
-#endif
+//#ifdef DEBUG
+//  Serial.println(millis());
+//  Serial.flush();
+//#endif
 
   String command = "";
   voltage = getVoltage();
