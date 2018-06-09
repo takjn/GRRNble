@@ -102,11 +102,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (BluetoothProfile.STATE_DISCONNECTED == newState) {    // 切断完了（接続可能範囲から外れて切断された）
                 // 接続可能範囲に入ったら自動接続するために、mBluetoothGatt.connect()を呼び出す。
                 mBluetoothGatt.connect();
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        hideDebugFragment();
-                    }
-                });
                 return;
             }
         }
@@ -485,7 +480,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCheckBoxBatteryLevel.setChecked(false);
         mCheckBoxTemperature.setEnabled(false);
         mCheckBoxTemperature.setChecked(false);
-        hideDebugFragment();
     }
 
     // キャラクタリスティックの読み込み
