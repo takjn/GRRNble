@@ -78,20 +78,13 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
             return;
         }
         if (mButtonWriteHello.getId() == v.getId()) {
-            this.enabled(false);
             mDebugListener.onWritePrivateCharacteristic("Hello");
             return;
         }
         if (mButtonWriteWorld.getId() == v.getId()) {
-            this.enabled(false);
             mDebugListener.onWritePrivateCharacteristic("World");
             return;
         }
-    }
-
-    public void enabled(boolean value) {
-        mButtonWriteHello.setEnabled(value);
-        mButtonWriteWorld.setEnabled(value);
     }
 
     public void setChara1(String value) {

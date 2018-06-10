@@ -26,8 +26,10 @@
             </intent-filter>
         </service>
 
+        <service android:name=".BLEService"></service>
+
         <!-- 明示的なブロードキャストインテントを受信するレシーバー -->
-        <receiver android:name=".MainActivity$WriteCharacteristicIntentReceiver" />
+        <receiver android:name=".BLEService$WritePrivateCharacteristicIntentReceiver" />
 
         <activity
             android:name=".MainActivity"
