@@ -2,6 +2,7 @@ package com.github.takjn.grrnble;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -78,20 +79,13 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
             return;
         }
         if (mButtonWriteHello.getId() == v.getId()) {
-            this.enabled(false);
             mDebugListener.onWritePrivateCharacteristic("Hello");
             return;
         }
         if (mButtonWriteWorld.getId() == v.getId()) {
-            this.enabled(false);
             mDebugListener.onWritePrivateCharacteristic("World");
             return;
         }
-    }
-
-    public void enabled(boolean value) {
-        mButtonWriteHello.setEnabled(value);
-        mButtonWriteWorld.setEnabled(value);
     }
 
     public void setChara1(String value) {
@@ -109,6 +103,5 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
 
         public void onWritePrivateCharacteristic(String message);
     }
-
-
+    
 }
