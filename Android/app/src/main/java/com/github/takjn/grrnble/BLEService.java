@@ -52,12 +52,8 @@ public class BLEService extends Service {
             }
         }
 
-        // キャラクタリスティックが読み込まれたときの処理
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.d("TAG", "onCharacteristicRead");
-//            Log.d(TAG, "service:" + service + ", characteristic:" + characteristic + ", action:" + action);
-
             if (BluetoothGatt.GATT_SUCCESS != status) {
                 return;
             }
@@ -80,7 +76,6 @@ public class BLEService extends Service {
             }
         }
 
-        // キャラクタリスティック変更が通知されたときの処理
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             if (UUID_BATTERY_LEVEL_CHARACTERISTIC.equals(characteristic.getUuid())) {
@@ -102,27 +97,7 @@ public class BLEService extends Service {
             }
         }
 
-        // キャラクタリスティックが書き込まれたときの処理
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (BluetoothGatt.GATT_SUCCESS != status) {
-                return;
-            }
-
-            if (UUID_PRIVATE_CHARACTERISTIC.equals(characteristic.getUuid())) {
-                Log.d(TAG, "onCharacteristicWrite:UUID_PRIVATE_CHARACTERISTIC");
-
-//                runOnUiThread(new Runnable() {
-//                    public void run() {
-//                        mFragmentDebug.enabled(true);
-//                    }
-//                });
-                return;
-            }
-        }
-
         private void sendBLEIntent(String action, String uuid, String value) {
-            Log.d(TAG, "sendBLEIntent");
             Intent intent = new Intent(getApplicationContext(), MainActivity.BLEIntentReceiver.class);
             intent.setAction(action);
             intent.putExtra("uuid", uuid);
@@ -166,32 +141,6 @@ public class BLEService extends Service {
         return null;
     }
 
-    /**
-     * BroadcastReceiver.
-     * Receive a broadcast-intent and write characteristics.
-     */
-    public static class WritePrivateCharacteristicIntentReceiver extends BroadcastReceiver {
-        private static final String TAG = "WPCIntentReceiver";
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive");
-
-            String title = intent.getStringExtra("title");
-            String body = intent.getStringExtra("body");
-            String message = title + "," + body;
-
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-
-            if (mBluetoothGatt != null) {
-                Log.d(TAG, "send message via BLE: " + message);
-
-                BluetoothGattCharacteristic blechar = mBluetoothGatt.getService(UUID_PRIVATE_SERVICE).getCharacteristic(UUID_PRIVATE_CHARACTERISTIC);
-                blechar.setValue(message);
-                mBluetoothGatt.writeCharacteristic(blechar);
-            }
-        }
-    }
 
     /**
      * BroadcastReceiver.
@@ -202,15 +151,13 @@ public class BLEService extends Service {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive");
-
-            String action = intent.getStringExtra("action");
+            String action = intent.getAction();
             String service = intent.getStringExtra("service");
             String characteristic = intent.getStringExtra("characteristic");
+            String message = intent.getStringExtra("message");
             Boolean enable = intent.getBooleanExtra("enable", true);
 
-
-            if (mBluetoothGatt != null && service != null && characteristic != null) {
+            if (mBluetoothGatt != null) {
                 if (action.equals("READ")) {
                     Log.d(TAG, "READ");
                     BluetoothGattCharacteristic ble = mBluetoothGatt.getService(UUID.fromString(service)).getCharacteristic(UUID.fromString(characteristic));
@@ -222,8 +169,11 @@ public class BLEService extends Service {
                     BluetoothGattDescriptor descriptor = ble.getDescriptor(UUID_NOTIFY);
                     descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                     mBluetoothGatt.writeDescriptor(descriptor);
+                } else if (action.equals("SEND_TO_WATCH")) {
+                    BluetoothGattCharacteristic ble = mBluetoothGatt.getService(UUID_PRIVATE_SERVICE).getCharacteristic(UUID_PRIVATE_CHARACTERISTIC);
+                    ble.setValue(message);
+                    mBluetoothGatt.writeCharacteristic(ble);
                 }
-
             }
         }
     }

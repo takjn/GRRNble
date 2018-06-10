@@ -43,9 +43,9 @@ public class NotificationService extends NotificationListenerService {
         }
 
         // send a explicit broadcast intent
-        Intent intent = new Intent(getApplicationContext(), BLEService.WritePrivateCharacteristicIntentReceiver.class);
-        intent.putExtra("title", title);
-        intent.putExtra("body", body);
+        Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
+        intent.setAction("SEND_TO_WATCH");
+        intent.putExtra("message", title + "," + body);
         sendBroadcast(intent);
     }
 

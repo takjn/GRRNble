@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mCheckBoxBatteryLevel.getId() == v.getId()) {
             // TODO:綺麗にする
             Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
-            intent.putExtra("action", "SET_NOTIFY");
+            intent.setAction("SET_NOTIFY");
             intent.putExtra("service", BLEService.UUID_BATTERY_SERVICE.toString());
             intent.putExtra("characteristic", BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC.toString());
             intent.putExtra("enable", mCheckBoxBatteryLevel.isChecked());
@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mCheckBoxTemperature.getId() == v.getId()) {
             // TODO:綺麗にする
             Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
-            intent.putExtra("action", "SET_NOTIFY");
+            intent.setAction("SET_NOTIFY");
             intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE.toString());
             intent.putExtra("characteristic", BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC.toString());
             intent.putExtra("enable", mCheckBoxTemperature.isChecked());
@@ -408,9 +408,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onWritePrivateCharacteristic(String message) {
         // send a explicit broadcast intent
-        Intent intent = new Intent(getApplicationContext(), BLEService.WritePrivateCharacteristicIntentReceiver.class);
-        intent.putExtra("title", message);
-        intent.putExtra("body", "");
+        Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
+        intent.setAction("SEND_TO_WATCH");
+        intent.putExtra("message", message);
         sendBroadcast(intent);
     }
 
@@ -419,7 +419,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // TODO:綺麗にする
         // send a explicit broadcast intent
         Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
-        intent.putExtra("action", "READ");
+        intent.setAction("READ");
         intent.putExtra("service", "0000180f-0000-1000-8000-00805f9b34fb");
         intent.putExtra("characteristic", "00002a19-0000-1000-8000-00805f9b34fb");
         sendBroadcast(intent);
@@ -430,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // TODO:綺麗にする
         // send a explicit broadcast intent
         Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
-        intent.putExtra("action", "READ");
+        intent.setAction("READ");
         intent.putExtra("service", "3B382559-223F-48CA-81B4-E151598F661B");
         intent.putExtra("characteristic", "B2332443-1DD3-407B-B3E6-5D349CAF5368");
         sendBroadcast(intent);
