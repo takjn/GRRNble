@@ -6,13 +6,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
@@ -44,7 +38,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, DebugFragment.DebugListener {
 
@@ -57,13 +50,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Handler mHandler;                       // UIスレッド操作ハンドラ : 「一定時間後にスキャンをやめる処理」で必要
     private boolean mScanning = false;              // スキャン中かどうかのフラグ
 
-    private Button mButtonScan;
     private Button mButtonConnect;
     private Button mButtonDisconnect;
     private CheckBox mCheckBoxBatteryLevel;
     private CheckBox mCheckBoxTemperature;
     private ProgressBar mProgressBar;
-    private DebugFragment mFragmentDebug;
+    private static TextView mTextViewBatteryLevel;
+    private static TextView mTextViewTemperature;
+    private static DebugFragment mFragmentDebug;
 
     /**
      * Device scan callback
@@ -130,11 +124,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ((TextView) findViewById(R.id.textview_devicename)).setText(mDevice.getName());
             ((TextView) findViewById(R.id.textview_deviceaddress)).setText(mDevice.getAddress());
 
-            mButtonScan.setEnabled(false);
-            mButtonConnect.setEnabled(true);
-            mButtonConnect.callOnClick();
+            mButtonConnect.setEnabled(false);
+            connect();
         } else {
-            mButtonScan.setEnabled(true);
+            mButtonConnect.setEnabled(true);
             Toast.makeText(this, R.string.device_is_not_found, Toast.LENGTH_SHORT).show();
         }
 
@@ -148,11 +141,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mButtonScan = (Button) findViewById(R.id.button_scan);
-        mButtonScan.setOnClickListener(this);
-
         mButtonConnect = (Button) findViewById(R.id.button_connect);
         mButtonConnect.setOnClickListener(this);
+
         mButtonDisconnect = (Button) findViewById(R.id.button_disconnect);
         mButtonDisconnect.setOnClickListener(this);
         mCheckBoxBatteryLevel = (CheckBox) findViewById(R.id.checkbox_battery_level);
@@ -160,6 +151,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCheckBoxTemperature = (CheckBox) findViewById(R.id.checkbox_temperature);
         mCheckBoxTemperature.setOnClickListener(this);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mTextViewBatteryLevel = (TextView) findViewById(R.id.textview_battery_level);
+        mTextViewTemperature = (TextView) findViewById(R.id.textview_temperature);
 
         FragmentManager fragmentManager = getFragmentManager();
         mFragmentDebug = (DebugFragment) fragmentManager.findFragmentById(R.id.fragment_debug);
@@ -190,8 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         // GUIアイテムの有効無効の設定
-        mButtonScan.setEnabled(true);
-        mButtonConnect.setEnabled(false);
+        mButtonConnect.setEnabled(true);
         mButtonDisconnect.setEnabled(false);
         mCheckBoxBatteryLevel.setEnabled(false);
         mCheckBoxTemperature.setEnabled(false);
@@ -277,14 +269,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == mButtonScan.getId()) {
-            mButtonScan.setEnabled(false);
-            startScan();
-            return;
-        }
-        if (mButtonConnect.getId() == v.getId()) {
+        if (v.getId() == mButtonConnect.getId()) {
             mButtonConnect.setEnabled(false);
-            connect();
+            startScan();
             return;
         }
         if (mButtonDisconnect.getId() == v.getId()) {
@@ -292,14 +279,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             disconnect();
             return;
         }
-//        if (mCheckBoxBatteryLevel.getId() == v.getId()) {
-//            setCharacteristicNotification(UUID_BATTERY_SERVICE, UUID_BATTERY_LEVEL_CHARACTERISTIC, mCheckBoxBatteryLevel.isChecked());
-//            return;
-//        }
-//        if (mCheckBoxTemperature.getId() == v.getId()) {
-//            setCharacteristicNotification(UUID_PRIVATE_SERVICE, UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC, mCheckBoxTemperature.isChecked());
-//            return;
-//        }
+
+        if (mCheckBoxBatteryLevel.getId() == v.getId()) {
+            // TODO:綺麗にする
+            Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
+            intent.putExtra("action", "SET_NOTIFY");
+            intent.putExtra("service", BLEService.UUID_BATTERY_SERVICE.toString());
+            intent.putExtra("characteristic", BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC.toString());
+            intent.putExtra("enable", mCheckBoxBatteryLevel.isChecked());
+            sendBroadcast(intent);
+            return;
+        }
+        if (mCheckBoxTemperature.getId() == v.getId()) {
+            // TODO:綺麗にする
+            Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
+            intent.putExtra("action", "SET_NOTIFY");
+            intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE.toString());
+            intent.putExtra("characteristic", BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC.toString());
+            intent.putExtra("enable", mCheckBoxTemperature.isChecked());
+            sendBroadcast(intent);
+            return;
+        }
     }
 
     /**
@@ -416,12 +416,63 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onReadBatteryLevelCharacteristic() {
-//        readCharacteristic(UUID_BATTERY_SERVICE, UUID_BATTERY_LEVEL_CHARACTERISTIC);
+        // TODO:綺麗にする
+        // send a explicit broadcast intent
+        Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
+        intent.putExtra("action", "READ");
+        intent.putExtra("service", "0000180f-0000-1000-8000-00805f9b34fb");
+        intent.putExtra("characteristic", "00002a19-0000-1000-8000-00805f9b34fb");
+        sendBroadcast(intent);
     }
 
     @Override
     public void onReadPrivateCharacteristic() {
-//        readCharacteristic(UUID_PRIVATE_SERVICE, UUID_PRIVATE_CHARACTERISTIC);
+        // TODO:綺麗にする
+        // send a explicit broadcast intent
+        Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
+        intent.putExtra("action", "READ");
+        intent.putExtra("service", "3B382559-223F-48CA-81B4-E151598F661B");
+        intent.putExtra("characteristic", "B2332443-1DD3-407B-B3E6-5D349CAF5368");
+        sendBroadcast(intent);
     }
 
+    /**
+     * BroadcastReceiver.
+     * Receive a broadcast-intent and read characteristics.
+     */
+    public static class BLEIntentReceiver extends BroadcastReceiver {
+        private static final String TAG = "BLEIntentReceiver";
+
+        DebugFragment.DebugListener mDebugListener;
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive");
+
+            String uuid = intent.getStringExtra("uuid");
+            String value = intent.getStringExtra("value");
+            String action = intent.getAction();
+
+            switch (action) {
+                case "READ":
+                    if (mFragmentDebug != null) {
+                        if (uuid.equals(BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC.toString())) {
+                            mFragmentDebug.setChara1(value);
+
+                        } else if (uuid.equals(BLEService.UUID_PRIVATE_CHARACTERISTIC.toString())) {
+                            mFragmentDebug.setChara2(value);
+                        }
+                    }
+                    break;
+                case "CHANGED":
+                    if (uuid.equals(BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC.toString())) {
+                        mTextViewBatteryLevel.setText(value);
+                    } else if (uuid.equals(BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC.toString())) {
+                        mTextViewTemperature.setText(value);
+                    }
+                    break;
+            }
+        }
+
+    }
 }

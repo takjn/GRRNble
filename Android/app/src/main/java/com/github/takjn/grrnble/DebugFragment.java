@@ -2,6 +2,7 @@ package com.github.takjn.grrnble;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -102,6 +103,5 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
 
         public void onWritePrivateCharacteristic(String message);
     }
-
-
+    
 }

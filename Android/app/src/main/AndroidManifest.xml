@@ -30,6 +30,8 @@
 
         <!-- 明示的なブロードキャストインテントを受信するレシーバー -->
         <receiver android:name=".BLEService$WritePrivateCharacteristicIntentReceiver" />
+        <receiver android:name=".BLEService$BLECommandIntentReceiver" />
+        <receiver android:name=".MainActivity$BLEIntentReceiver" />
 
         <activity
             android:name=".MainActivity"
