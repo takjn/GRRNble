@@ -80,6 +80,10 @@ WV,001B,E381A3E381A371.
 WV,001B,393837363534333231.
 ```
 
+## ライブラリ
+- [https://github.com/greiman/SSD1306Ascii](https://github.com/greiman/SSD1306Ascii)
+- [https://github.com/Tamakichi/Arduino-misakiUTF16](https://github.com/Tamakichi/Arduino-misakiUTF16)
+
 ## 参考
 
 - [BLE通信ソフトを作る ( Android Studio 2.3.3 + RN4020 )](http://www.hiramine.com/programming/blecommunicator/index.html)
