@@ -1,13 +1,8 @@
 String last_command = "";
-String last_nofication = "";
 
 void checkBLE() {
-//#ifdef DEBUG
-//  Serial.println(millis());
-//  Serial.flush();
-//#endif
-
   String command = "";
+  
   voltage = getVoltage();
   temperature = getAvgTempareture();
   
@@ -31,17 +26,13 @@ void checkBLE() {
       if (last_command != command && !command.startsWith("AOK") && !command.startsWith("00")) {
         last_command = command;
         has_notification = true;
+        beep_flag = true;
 
         // wake up
         if (!is_active) {
           wake_flag = true;
         }
       }
-
-//#ifdef DEBUG
-//      Serial.println(command);
-//      Serial.flush();
-//#endif
     }
     else {
       command += c;
@@ -49,82 +40,24 @@ void checkBLE() {
   }
 }
 
-void drawNotification(unsigned char key) {
-  if (key == KEY_SELECT && is_active) {
-    has_notification = false;
-    last_nofication = "";
-    oled.clear();
-
-    return;
-  }
-
-  String message = decodeValue(last_command);
-  String title = "";
-  String body = "";
-  int sp = message.indexOf(",");
-  if (sp > 0) {
-    title = message.substring(0, sp);
-    body = message.substring(sp+1);
-  }
-  else {
-    title = message;
-  }
+void checkNotification() {
+  message = decodeValue(last_command);
   
-  if (title == "DT") {
+  if (message.startsWith("DT")) {
     // Time sync command
-    int year = body.substring(0, 2).toInt() + 2000;
-    int month = body.substring(3, 5).toInt();
-    int day = body.substring(6, 8).toInt();
-    int week = body.substring(9, 10).toInt();
-    int hour = body.substring(11, 13).toInt();
-    int minute = body.substring(14, 16).toInt();
+    int year = message.substring(3, 5).toInt() + 2000;
+    int month = message.substring(6, 8).toInt();
+    int day = message.substring(9, 11).toInt();
+    int week = message.substring(12, 13).toInt();
+    int hour = message.substring(14, 16).toInt();
+    int minute = message.substring(17, 19).toInt();
 
     datetime = {year, month, day, week, hour, minute, 00};
     rtc_set_time(&datetime);
     
     has_notification = false;
-    last_nofication = "";
-    oled.clear();
-
     return;
   }
-  
-  // draw current time
-  rtc_get_time(&datetime);
-  oled.set1X();
-  oled.setCursor(0, 7);
-  printWithZero(datetime.hour);
-  oled.print(':');
-  printWithZero(datetime.min);
-  oled.setCursor(56, 7);
-  printWithZero(datetime.second);
-  oled.clearToEOL();
-
-  oled.set1X();
-  oled.setCursor(0, 0);
-  oled.print("Incoming");
-  oled.clearToEOL();
-
-  // draw notification
-  oled.set2X();
-  oled.setCursor(0, 3);
-  oled.print(title);
-  oled.clearToEOL();
-  oled.set1X();
-  oled.setCursor(0, 5);
-  oled.print(body);
-  oled.clearToEOL();
-
-  if (last_nofication != message) {
-    beep();
-    delay(100);
-    beep();
-    delay(100);
-    beep();
-
-    last_nofication = message;
-  }
-
 }
 
 static String decodeValue(String s) {

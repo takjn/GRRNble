@@ -29,8 +29,8 @@ const int DISPLAY_CONTRASTS[4] = { 0, 50, 128, 255 };  // 4 steps contrast
 int display_contrast = 3;
 
 // settings for power saving
-const unsigned long DELAY_SLEEPS[4] = {0, 7000, 10000, 15000};  // sleep (millisec, 0=always on)
-int delay_sleep = 1;
+const unsigned long DELAY_SLEEPS[4] = {0, 5000, 10000, 20000};  // sleep (millisec, 0=always on)
+int delay_sleep = 2;
 boolean wake_flag = false;
 boolean is_active = true;
 
@@ -57,6 +57,8 @@ uint8_t mode_current = MODE_TIME;
 
 // Notification handler
 boolean has_notification = false;
+boolean beep_flag = false;
+String message = "";
 
 unsigned long last_check_millis = 0;
 unsigned long last_millis = 0;
@@ -96,6 +98,7 @@ void setup() {
 
 void loop() {
   unsigned long current = millis();
+  
   // get command from BLE module
   if (is_active) {
     int span = current - last_check_millis;
@@ -106,14 +109,6 @@ void loop() {
 
     // sleep if idle
     if(delay_sleep > 0 && (current - last_millis) > DELAY_SLEEPS[delay_sleep]) {
-#ifdef DEBUG
-      Serial.println("-----------");
-      Serial.println(current);
-      Serial.println(last_millis);
-      Serial.println("-----------");
-      Serial.flush();
-#endif
-
       oled.ssd1306WriteCmd(0x0ae); // display off
       is_active = false;
       setOperationClockMode(CLK_LOW_SPEED_MODE);
@@ -124,8 +119,8 @@ void loop() {
     if ( span > 1500 || span < 0) {
       setOperationClockMode(CLK_HIGH_SPEED_MODE);
       checkBLE();
-      last_check_millis = current;
       setOperationClockMode(CLK_LOW_SPEED_MODE);
+      last_check_millis = current;
     }
   }
 
@@ -142,10 +137,12 @@ void loop() {
   }
   
   if (is_active) {
-    // draw screen if the display is on
     if (has_notification) {
-      drawNotification(key);
-    } else if (mode_current == MODE_TIME) {
+      checkNotification();
+    }
+    
+    // draw screen if the display is on
+    if (mode_current == MODE_TIME) {
       drawWatch(key);
     } else if (mode_current == MODE_MENU) {
       drawMenu(key);

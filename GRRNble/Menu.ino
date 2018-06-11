@@ -64,6 +64,8 @@ void drawMenu(unsigned char key) {
   oled.setCursor(0, 0);
   oled.print(MENU_TITLE);
   oled.clearToEOL();
+  oled.setCursor(0, 5);
+  oled.clearToEOL();
   oled.setCursor(0, 7);
   oled.print(MENU_SUB_TITLE[cursol]);
   oled.clearToEOL();

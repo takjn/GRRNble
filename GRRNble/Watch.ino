@@ -9,6 +9,10 @@ void drawWatch(unsigned char key) {
     return;
   }
   
+  if (key == KEY_NEXT && has_notification) {
+    has_notification = false;
+  }
+  
   rtc_get_time(&datetime);
   if (datetime.second == last_second) {
     return;
@@ -38,9 +42,24 @@ void drawWatch(unsigned char key) {
   oled.setCursor(107, 4);
   printWithZero(datetime.second);
   
-// TODO:ここに通知を表示するようにする
-//  oled.setCursor(0, 5);
-//  oled.printMisakiUTF16("新着メールが0件あります ");
+  // draw notification
+  oled.setCursor(0, 5);
+  if (has_notification) {
+    char buf[20];
+    message.toCharArray(buf, 20);
+    oled.printMisakiUTF16(buf);
+    
+    if (beep_flag) {
+      beep();
+      delay(100);
+      beep();
+      delay(100);
+      beep();
+      
+      beep_flag = false;
+    }
+  }
+  oled.clearToEOL();
   
   oled.set1X();
   oled.setCursor(0, 7);
