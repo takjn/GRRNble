@@ -28,24 +28,16 @@ public class NotificationService extends NotificationListenerService {
 
         super.onNotificationPosted(sbn);
 
-        String packageName = sbn.getPackageName();
-        String title = "Unknown";
-        String body = "";
-
-        if (packageName.equals("com.google.android.apps.inbox")) {
-            title = "Email";
-        }
-        else if (packageName.startsWith("com.facebook")) {
-            title = "Facebook";
-        }
-        else {
-            body = packageName;
-        }
+        String message = "";
+        message = sbn.getNotification().category;
+        message = message.substring(0, 1).toUpperCase() + message.substring(1) + ":";
+        message = message + sbn.getNotification().tickerText;
+        message = leftB(message, 20);
 
         // send a explicit broadcast intent
         Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
         intent.setAction("SEND_TO_WATCH");
-        intent.putExtra("message", title + "," + body);
+        intent.putExtra("message", message);
         sendBroadcast(intent);
     }
 
@@ -53,5 +45,26 @@ public class NotificationService extends NotificationListenerService {
 //    public void onNotificationRemoved(StatusBarNotification sbn) {
 //        Log.d(TAG, "onNotificationRemoved");
 //    }
+
+    private String leftB(String str, Integer len){
+        StringBuffer sb = new StringBuffer();
+        int cnt = 0;
+
+        try{
+            for (int i = 0; i < str.length(); i++) {
+                String tmpStr = str.substring(i, i + 1);
+                byte[] b = tmpStr.getBytes("UTF-8");
+                if (cnt + b.length > len) {
+                    return sb.toString();
+                } else {
+                    sb.append(tmpStr);
+                    cnt += b.length;
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
 
 }
