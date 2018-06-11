@@ -61,8 +61,6 @@ static int getVoltage() {
   v = ((float)voltage/1023)*1.45/0.333333;
   ret = 100 - ( (MAX_VOLTAGE - v) / MAX_VOLTAGE_DROP * 100);
   
-  Serial.println(v);
-  
   if (ret > 99) {
     ret = 99;
   } else if (ret < 0) {
