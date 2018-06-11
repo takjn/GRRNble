@@ -29,19 +29,30 @@ const int DISPLAY_CONTRASTS[4] = { 0, 50, 128, 255 };  // 4 steps contrast
 int display_contrast = 3;
 
 // settings for power saving
-const unsigned long DELAY_SLEEPS[4] = {0, 5000, 10000, 20000};  // sleep (millisec, 0=always on)
-int delay_sleep = 2;
+const unsigned long DELAY_SLEEPS[4] = {0, 20000, 10000, 5000};  // sleep (millisec, 0=always on)
+int delay_sleep = 1;
 boolean wake_flag = false;
 boolean is_active = true;
 
 // settings for battery service
-#define MAX_VOLTAGE 3.3
+#define MAX_VOLTAGE 3.7
+#define MAX_VOLTAGE_DROP 0.6
 int voltage = 0;
 
+// settings for temperature service
 double temperature = getTemperature(TEMP_MODE_CELSIUS);
 
 // variables for watch
 RTC_TIMETYPE datetime = {15, 12, 31, 2, 23, 59, 30};
+
+// variables for notification
+boolean has_notification = false;
+boolean beep_flag = false;
+String message = "";
+
+// variables for power saving
+unsigned long last_check_millis = 0;
+unsigned long last_millis = 0;
 
 // mode
 #define MODE_TIME 0        // Watch
@@ -54,14 +65,6 @@ uint8_t mode_current = MODE_TIME;
 #define KEY_PREV 1
 #define KEY_NEXT 2
 #define KEY_SELECT 3
-
-// Notification handler
-boolean has_notification = false;
-boolean beep_flag = false;
-String message = "";
-
-unsigned long last_check_millis = 0;
-unsigned long last_millis = 0;
 
 void setup() {
   // initialize RTC
@@ -97,30 +100,28 @@ void setup() {
 }
 
 void loop() {
-  unsigned long current = millis();
   
   // get command from BLE module
+  int span = millis() - last_check_millis;
   if (is_active) {
-    int span = current - last_check_millis;
     if ( span > 5000 || span < 0) {
       checkBLE();
-      last_check_millis = current;
+      last_check_millis = millis();
     }
 
     // sleep if idle
-    if(delay_sleep > 0 && (current - last_millis) > DELAY_SLEEPS[delay_sleep]) {
+    if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
       oled.ssd1306WriteCmd(0x0ae); // display off
       is_active = false;
       setOperationClockMode(CLK_LOW_SPEED_MODE);
     }
   }
   else {
-    int span = current - last_check_millis;
     if ( span > 1500 || span < 0) {
       setOperationClockMode(CLK_HIGH_SPEED_MODE);
       checkBLE();
       setOperationClockMode(CLK_LOW_SPEED_MODE);
-      last_check_millis = current;
+      last_check_millis = millis();
     }
   }
 
@@ -133,7 +134,7 @@ void loop() {
     oled.ssd1306WriteCmd(0x0af); // display on
     wake_flag = false;
     is_active = true;
-    last_millis = current;
+    last_millis = millis();
   }
   
   if (is_active) {
