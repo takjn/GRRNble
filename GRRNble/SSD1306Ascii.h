@@ -238,6 +238,14 @@ class SSD1306Ascii : public Print {
    * @return The length of the string.
    */
   size_t write(const char* s);
+  /**
+   * @brief Display a string with Misaki font.
+   * https://github.com/Tamakichi/Arduino-misakiUTF16
+   *
+   * @param[in] s The string to display.
+   * @return The length of the string.
+   */
+  size_t printMisakiUTF16(char* s);   
   
  private:
   virtual void writeDisplay(uint8_t b, uint8_t mode) = 0;

@@ -18,6 +18,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 #include "SSD1306Ascii.h"
+#include "misakiUTF16.h"
+
 //------------------------------------------------------------------------------
 uint8_t SSD1306Ascii::charWidth(uint8_t c) {
   if (!m_font) {
@@ -236,3 +238,24 @@ size_t SSD1306Ascii::write(const char* s) {
   }
   return n;
 }
+//------------------------------------------------------------------------------
+size_t SSD1306Ascii::printMisakiUTF16(char * pUTF8) {
+  uint8_t buf[64][8];
+
+  int n=0;
+  while(*pUTF8) {
+    pUTF8 = getFontData(&buf[n++][0], pUTF8, true);
+  }
+    
+  for (byte j=0; j < n; j++) {
+    for (byte i=0; i < 8; i++) {
+      uint8_t ch = 0;
+      for (byte k=0;k<8;k++) {
+        ch = ch | bitRead(buf[j][k],7-i) << k;
+      }
+      ssd1306WriteRamBuf(ch);
+    }
+  }
+  return 1;
+}
+

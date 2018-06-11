@@ -28,7 +28,7 @@ void drawWatch(unsigned char key) {
   oled.print((datetime.year+2000));
  
   // draw time strings
-  oled.setCursor(2, 3);
+  oled.setCursor(0, 3);
   oled.set2X();
   printWithZero(datetime.hour);
   oled.print(':');
@@ -37,6 +37,10 @@ void drawWatch(unsigned char key) {
   oled.set1X();
   oled.setCursor(107, 4);
   printWithZero(datetime.second);
+  
+// TODO:ここに通知を表示するようにする
+//  oled.setCursor(0, 5);
+//  oled.printMisakiUTF16("新着メールが0件あります ");
   
   oled.set1X();
   oled.setCursor(0, 7);
