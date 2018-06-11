@@ -135,6 +135,7 @@ void loop() {
     wake_flag = false;
     is_active = true;
     last_millis = millis();
+    key = KEY_NONE;
   }
   
   if (is_active) {
