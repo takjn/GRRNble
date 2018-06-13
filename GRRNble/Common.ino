@@ -55,13 +55,16 @@ static int getVoltage() {
   
   // 2:1で抵抗分圧した回路を前提に、 RL78/G13の内部基準電圧(1.45V)でA/Dを実施。
   int voltage = analogRead(VOLTAGE_CHK_PIN);
-  v = ((float)voltage/1023)*1.45/0.333333;
 
   digitalWrite(VOLTAGE_OUT_PIN, 0);
 
-  ret = (int)(v/MAX_VOLTAGE*100);
+  v = ((float)voltage/1023)*1.45/0.333333;
+  ret = 100 - ( (MAX_VOLTAGE - v) / MAX_VOLTAGE_DROP * 100);
+  
   if (ret > 99) {
     ret = 99;
+  } else if (ret < 0) {
+    ret = 0;
   }
   
   String s = "SHW,001E," + String(ret, HEX); 

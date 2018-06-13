@@ -19,14 +19,16 @@ void checkBLE() {
 
   // read result
   while(Serial1.available() > 0){
-    delay(5);
     char c = Serial1.read();
     
     if (c == '\n') {
       if (last_command != command && !command.startsWith("AOK") && !command.startsWith("00")) {
         last_command = command;
+        message = decodeValue(command);
+
         has_notification = true;
         beep_flag = true;
+        last_millis = millis();
 
         // wake up
         if (!is_active) {
@@ -37,20 +39,20 @@ void checkBLE() {
     else {
       command += c;
     }
+    
+    delay(5);
   }
 }
 
 void checkNotification() {
-  message = decodeValue(last_command);
-  
   if (message.startsWith("DT")) {
     // Time sync command
-    int year = message.substring(3, 5).toInt() + 2000;
-    int month = message.substring(6, 8).toInt();
-    int day = message.substring(9, 11).toInt();
-    int week = message.substring(12, 13).toInt();
-    int hour = message.substring(14, 16).toInt();
-    int minute = message.substring(17, 19).toInt();
+    short unsigned int year = message.substring(3, 5).toInt() + 2000;
+    unsigned char  month = message.substring(6, 8).toInt();
+    unsigned char day = message.substring(9, 11).toInt();
+    unsigned char week = message.substring(12, 13).toInt();
+    unsigned char hour = message.substring(14, 16).toInt();
+    unsigned char minute = message.substring(17, 19).toInt();
 
     datetime = {year, month, day, week, hour, minute, 00};
     rtc_set_time(&datetime);
