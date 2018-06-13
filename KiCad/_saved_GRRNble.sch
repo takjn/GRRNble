@@ -458,7 +458,7 @@ U 1 1 5AE83402
 P 5200 1300
 F 0 "BT1" H 5300 1400 50  0000 L CNN
 F 1 "Battery_Cell" H 5300 1300 50  0000 L CNN
-F 2 "Connectors_Mini-Universal:MiniUniversalMate-N-LokSocket_2PinHorizontal" V 5200 1360 50  0001 C CNN
+F 2 "misc:BatteryPad" V 5200 1360 50  0001 C CNN
 F 3 "" V 5200 1360 50  0001 C CNN
 	1    5200 1300
 	1    0    0    -1  

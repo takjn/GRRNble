@@ -1,4 +1,4 @@
-update=2018年04月30日 19時47分07秒
+update=2018年06月12日 23時53分11秒
 version=1
 last_client=kicad
 [pcbnew]
@@ -61,3 +61,5 @@ LibName29=library/renesas
 LibName30=library/JST-SH/JST-SH
 LibName31=library/SSD1306/SSD1306
 LibName32=library/misc/misc
+LibName33=library/RN4020
+LibName34=library/open-project/open-project

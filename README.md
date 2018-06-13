@@ -85,7 +85,7 @@ WV,001B,393837363534333231.
 - [https://github.com/Tamakichi/Arduino-misakiUTF16](https://github.com/Tamakichi/Arduino-misakiUTF16)
 
 ## 参考
-
+- [GR-COTTON 回路図](http://gadget.renesas.com/ja/product/documents/gr-cotton_sch.pdf)
 - [BLE通信ソフトを作る ( Android Studio 2.3.3 + RN4020 )](http://www.hiramine.com/programming/blecommunicator/index.html)
 - [RN4020 Bluetooth® Low Energy モジュールユーザガイド](http://akizukidenshi.com/download/ds/microchip/70005191A_JP.pdf)
 
