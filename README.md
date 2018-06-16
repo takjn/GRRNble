@@ -24,7 +24,7 @@ DIY Smartwatch using Renesas RL78/G13 MCU and RN4020 ble module with Android com
 
 KiCadフォルダ内にKicadのプロジェクト一式があります。
 
-## RN4020の設定
+### RN4020の設定
 
 RN4020をシリアルケーブルで接続し、以下のコマンドを実行します。
 
