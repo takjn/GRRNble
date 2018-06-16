@@ -1,4 +1,4 @@
-update=2018年06月12日 23時53分11秒
+update=2018年06月16日 23時59分49秒
 version=1
 last_client=kicad
 [pcbnew]
@@ -63,3 +63,13 @@ LibName31=library/SSD1306/SSD1306
 LibName32=library/misc/misc
 LibName33=library/RN4020
 LibName34=library/open-project/open-project
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60
