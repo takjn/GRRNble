@@ -30,6 +30,8 @@ public class BLEService extends Service {
 
     // for Notification
     public static final UUID UUID_NOTIFY = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+
+    public static BluetoothDevice mDevice;
     private static BluetoothGatt mBluetoothGatt = null;
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -114,7 +116,7 @@ public class BLEService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
 
-        BluetoothDevice mDevice = intent.getParcelableExtra("device");
+        mDevice = intent.getParcelableExtra("device");
         Log.d(TAG, mDevice.getName());
         Log.d(TAG, mDevice.getAddress());
 
@@ -130,6 +132,10 @@ public class BLEService extends Service {
         if (mBluetoothGatt != null) {
             mBluetoothGatt.close();
             mBluetoothGatt = null;
+        }
+
+        if (mDevice != null) {
+            mDevice = null;
         }
 
         super.onDestroy();
