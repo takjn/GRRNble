@@ -175,6 +175,7 @@ public class BLEService extends Service {
                     descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                     mBluetoothGatt.writeDescriptor(descriptor);
                 } else if (action.equals("SEND_TO_WATCH")) {
+                    Log.d(TAG, "SEND_TO_WATCH:" + message);
                     BluetoothGattCharacteristic ble = mBluetoothGatt.getService(UUID_PRIVATE_SERVICE).getCharacteristic(UUID_PRIVATE_CHARACTERISTIC);
                     ble.setValue(message);
                     mBluetoothGatt.writeCharacteristic(ble);
@@ -182,5 +183,4 @@ public class BLEService extends Service {
             }
         }
     }
-
 }

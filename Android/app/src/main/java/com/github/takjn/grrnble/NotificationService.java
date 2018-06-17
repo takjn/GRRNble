@@ -36,6 +36,12 @@ public class NotificationService extends NotificationListenerService {
 
         super.onNotificationPosted(sbn);
 
+        String pn = sbn.getPackageName();
+
+        if (pn.equals("com.android.incallui") || pn.equals("com.google.android.googlequicksearchbox")) {
+            return;
+        }
+
         String message = "";
         if (sbn.getNotification().category != null) {
             message = sbn.getNotification().category;

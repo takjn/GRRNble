@@ -8,6 +8,7 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:allowBackup="true"
@@ -31,6 +32,11 @@
         <!-- 明示的なブロードキャストインテントを受信するレシーバー -->
         <receiver android:name=".BLEService$BLECommandIntentReceiver" />
         <receiver android:name=".MainActivity$BLEIntentReceiver" />
+        <receiver android:name=".PhoneCallReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name=".MainActivity">
