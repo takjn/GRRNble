@@ -326,7 +326,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
-        Intent intent = new Intent(getApplication(), BLEService.class);
+        Intent intent = new Intent(getApplication(), NotificationService.class);
+        startService(intent);
+
+        intent = new Intent(getApplication(), BLEService.class);
         intent.putExtra("device", mDevice);
         startService(intent);
 
@@ -340,6 +343,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void disconnect() {
         Intent intent = new Intent(getApplication(), BLEService.class);
+        stopService(intent);
+
+        intent = new Intent(getApplication(), NotificationService.class);
         stopService(intent);
 
         mButtonConnect.setEnabled(true);

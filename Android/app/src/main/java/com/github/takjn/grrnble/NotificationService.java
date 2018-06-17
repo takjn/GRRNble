@@ -16,6 +16,14 @@ public class NotificationService extends NotificationListenerService {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand");
+
+        return START_REDELIVER_INTENT;
+    }
+
+
+    @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
@@ -29,9 +37,18 @@ public class NotificationService extends NotificationListenerService {
         super.onNotificationPosted(sbn);
 
         String message = "";
-        message = sbn.getNotification().category;
-        message = message.substring(0, 1).toUpperCase() + message.substring(1) + ":";
-        message = message + sbn.getNotification().tickerText;
+        if (sbn.getNotification().category != null) {
+            message = sbn.getNotification().category;
+            if (message.length() > 1) {
+                message = message.substring(0, 1).toUpperCase() + message.substring(1) + ":";
+            }
+        }
+        if (sbn.getNotification().tickerText != null) {
+            message = message + sbn.getNotification().tickerText;
+        }
+        if (message.length() < 1) {
+            message = sbn.getPackageName();
+        }
         message = leftB(message, 20);
 
         // send a explicit broadcast intent
@@ -46,11 +63,11 @@ public class NotificationService extends NotificationListenerService {
 //        Log.d(TAG, "onNotificationRemoved");
 //    }
 
-    private String leftB(String str, Integer len){
+    private String leftB(String str, Integer len) {
         StringBuffer sb = new StringBuffer();
         int cnt = 0;
 
-        try{
+        try {
             for (int i = 0; i < str.length(); i++) {
                 String tmpStr = str.substring(i, i + 1);
                 byte[] b = tmpStr.getBytes("UTF-8");
@@ -61,7 +78,7 @@ public class NotificationService extends NotificationListenerService {
                     cnt += b.length;
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return sb.toString();
