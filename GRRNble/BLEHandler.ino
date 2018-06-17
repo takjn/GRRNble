@@ -64,14 +64,13 @@ void checkNotification() {
 
 static String decodeValue(String s) {
   String str = "";
+  char buf[3];
+  buf[2] = '\0';
+
   for (int i=0; i<s.length(); i=i+2) {
-    String tmp = "0x";
-    tmp += s.charAt(i);
-    tmp += s.charAt(i + 1);
+    buf[0] = s.charAt(i);
+    buf[1] = s.charAt(i + 1);
     
-    char buf[5];
-    tmp.toCharArray(buf, 5);
-  
     char chr = (char)strtol(buf, NULL, 16);
   
     str += chr;

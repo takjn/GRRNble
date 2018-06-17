@@ -26,7 +26,7 @@ int buzzer_volume = 3;                              // initial volume index
 
 // settings for display
 const int DISPLAY_CONTRASTS[4] = { 0, 50, 128, 255 };  // 4 steps contrast
-int display_contrast = 2;
+int display_contrast = 1;
 
 // settings for power saving
 const unsigned long DELAY_SLEEPS[4] = {0, 20000, 10000, 5000};  // sleep (millisec, 0=always on)
@@ -70,7 +70,6 @@ void setup() {
   // initialize RTC
   rtc_init();
   SUBCUD.subcud = 0xB8;  // http://japan.renesasrulz.com/gr_user_forum_japanese/f/gr-kurumi/631/gr-kurumi-rtc
-  rtc_set_time(&datetime); // RTCに初期値をセット
   
   // initialize SSD1306
   Wire.begin();     
@@ -114,6 +113,7 @@ void loop() {
       oled.ssd1306WriteCmd(0x0ae); // display off
       is_active = false;
       setOperationClockMode(CLK_LOW_SPEED_MODE);
+      last_check_millis = millis();
     }
   }
   else {
@@ -152,9 +152,6 @@ void loop() {
       drawSetTime(key);
     }
     
-    // delay
-    for(int i=0;i<50;i++) {
-      _HALT();
-    }
+    delay(50);
   }
 }
