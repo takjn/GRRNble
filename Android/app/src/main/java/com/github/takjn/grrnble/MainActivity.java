@@ -197,6 +197,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onResume();
         requestBluetoothFeature();
+
+        if (mDevice == null && BLEService.mDevice != null) {
+            mDevice = BLEService.mDevice;
+
+            // TODO:重複コード。リファクタリングできる。
+            mButtonDisconnect.setEnabled(true);
+            mCheckBoxBatteryLevel.setEnabled(true);
+            mCheckBoxTemperature.setEnabled(true);
+
+            // TODO:重複コード。
+            ((TextView) findViewById(R.id.textview_devicename)).setText(mDevice.getName());
+            ((TextView) findViewById(R.id.textview_deviceaddress)).setText(mDevice.getAddress());
+
+            mButtonConnect.setEnabled(false);
+        }
     }
 
     @Override

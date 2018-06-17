@@ -2,4 +2,5 @@
   (lib (name JST-SH)(type Legacy)(uri "$(KIPRJMOD)/library/JST-SH/JST-SH.mod")(options "")(descr ""))
   (lib (name SSD1306)(type KiCad)(uri "$(KIPRJMOD)/library/SSD1306")(options "")(descr ""))
   (lib (name misc)(type KiCad)(uri "$(KIPRJMOD)/library/misc")(options "")(descr ""))
+  (lib (name library)(type KiCad)(uri "$(KIPRJMOD)/library")(options "")(descr ""))
 )
