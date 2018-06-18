@@ -200,8 +200,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mDevice == null && BLEService.mDevice != null) {
             mDevice = BLEService.mDevice;
             reconnect();
-        } else {
-            disconnect();
         }
     }
 
