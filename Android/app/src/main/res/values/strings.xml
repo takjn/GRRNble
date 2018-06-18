@@ -7,6 +7,8 @@
     <string name="bluetooth_is_not_supported">Bluetooth is not supported.</string>
     <string name="bluetooth_is_not_working">Bluetooth is not working.</string>
     <string name="device_is_not_found">Device is not found.</string>
+    <string name="connection_failed">Connection failed.</string>
+    <string name="connection_lost">Connection is lost.</string>
 
     <!-- Menu -->
     <string name="search">Search</string>

@@ -1,6 +1,5 @@
 package com.github.takjn.grrnble;
 
-import android.content.Context;
 import android.content.Intent;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
