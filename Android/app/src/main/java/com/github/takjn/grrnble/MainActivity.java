@@ -429,10 +429,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onWritePrivateCharacteristic(String message) {
         // send a explicit broadcast intent
-        Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
-        intent.setAction("SEND_TO_WATCH");
-        intent.putExtra("message", message);
-        sendBroadcast(intent);
+        BLEService.sendToWatch(getApplicationContext(), message);
     }
 
     @Override

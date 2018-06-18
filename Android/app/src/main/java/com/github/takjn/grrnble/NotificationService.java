@@ -1,5 +1,6 @@
 package com.github.takjn.grrnble;
 
+import android.content.Context;
 import android.content.Intent;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
@@ -58,10 +59,7 @@ public class NotificationService extends NotificationListenerService {
         message = leftB(message, 20);
 
         // send a explicit broadcast intent
-        Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
-        intent.setAction("SEND_TO_WATCH");
-        intent.putExtra("message", message);
-        sendBroadcast(intent);
+        BLEService.sendToWatch(getApplicationContext(), message);
     }
 
 //    @Override

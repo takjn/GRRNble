@@ -39,11 +39,8 @@ public class PhoneCallReceiver extends BroadcastReceiver {
                     if (!callNumber.isEmpty()) {
                         String message = "Call:" + callNumber;
                         Log.d(TAG, "CALL_STATE_RINGING : " + message);
-                        // send a explicit broadcast intent
-                        Intent intent = new Intent(mContext.getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
-                        intent.setAction("SEND_TO_WATCH");
-                        intent.putExtra("message", message);
-                        mContext.sendBroadcast(intent);
+
+                        BLEService.sendToWatch(mContext.getApplicationContext(), message);
                     }
 
                     break;
