@@ -108,7 +108,7 @@ GRRNbleフォルダ内にIDE for GRのプロジェクト一式があります。
 
 ### Android companion app
 
-Androidフォルダ内にAndAndroid Studioのプロジェクト一式があります。
+Androidフォルダ内にAndAndroid Studioのプロジェクト一式があります。Android 8.0でのみ動作確認しています。
 
 
 ## References
