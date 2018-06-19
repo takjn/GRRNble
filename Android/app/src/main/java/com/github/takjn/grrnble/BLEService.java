@@ -39,7 +39,6 @@ public class BLEService extends Service {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (BluetoothGatt.GATT_SUCCESS != status) {
-                Toast.makeText(getApplicationContext(), R.string.connection_failed, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "GATT status is not success.");
                 return;
             }

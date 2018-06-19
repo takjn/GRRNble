@@ -35,4 +35,9 @@
     <string name="debug">Debug</string>
     <string name="time_sync">Time Sync</string>
 
+    <!-- Notification Listener Service -->
+    <string name="notification_content_title">GRRNble Service</string>
+    <string name="notification_content_text">GRRNbleはバックグラウンドで実行しています。</string>
+
+
 </resources>

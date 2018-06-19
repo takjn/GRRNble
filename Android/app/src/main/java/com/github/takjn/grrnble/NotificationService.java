@@ -1,6 +1,13 @@
 package com.github.takjn.grrnble;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
@@ -8,26 +15,6 @@ import android.util.Log;
 public class NotificationService extends NotificationListenerService {
 
     private static final String TAG = "NotificationService";
-
-    @Override
-    public void onCreate() {
-        Log.d(TAG, "onCreate");
-        super.onCreate();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand");
-
-        return START_REDELIVER_INTENT;
-    }
-
-
-    @Override
-    public void onDestroy() {
-        Log.d(TAG, "onDestroy");
-        super.onDestroy();
-    }
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
@@ -38,8 +25,14 @@ public class NotificationService extends NotificationListenerService {
 
         String pn = sbn.getPackageName();
 
-        if (pn.equals("com.android.incallui") || pn.equals("com.google.android.googlequicksearchbox")) {
-            return;
+        switch (pn) {
+            case "android":
+            case "com.android.incallui":
+            case "com.google.android.googlequicksearchbox":
+            case "com.kddi.android.cmail":
+                return;
+            default:
+                break;
         }
 
         String message = "";
@@ -59,6 +52,30 @@ public class NotificationService extends NotificationListenerService {
 
         // send a explicit broadcast intent
         BLEService.sendToWatch(getApplicationContext(), message);
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.createNotificationChannel(new NotificationChannel("notification_lisner", "GRRNble", NotificationManager.IMPORTANCE_MIN));
+
+            PendingIntent pendingIntent =
+                    PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Notification notification = new Notification.Builder(this, "notification_lisner")
+                    .setContentTitle(getString(R.string.notification_content_title))
+                    .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
+                    .setContentText(getString(R.string.notification_content_text))
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .setWhen(System.currentTimeMillis())
+                    .build();
+
+            startForeground(1, notification);
+        }
+
+        return super.onBind(intent);
     }
 
 //    @Override
