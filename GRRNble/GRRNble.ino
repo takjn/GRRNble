@@ -77,12 +77,15 @@ void setup() {
   oled.setContrast(DISPLAY_CONTRASTS[display_contrast]);
   oled.clear();
 
-  // setup for voltage measurement
+  // setup voltage measurement
   analogReference(INTERNAL);
   pinMode(VOLTAGE_OUT_PIN, OUTPUT);
   pinMode(VOLTAGE_CHK_PIN, INPUT);
   
-  // setup for the power management
+  // setup power management
+  setPowerManagementMode(PM_STOP_MODE);
+
+  // setup pins
   pinMode(BUZZER_PIN, OUTPUT);
   pinMode(KEY_PREV_PIN, INPUT_PULLUP);
   pinMode(KEY_SELECT_PIN, INPUT_PULLUP);
@@ -101,12 +104,14 @@ void setup() {
 void sleep() {
   oled.ssd1306WriteCmd(0x0ae); // display off
   is_active = false;
+  setPowerManagementMode(PM_NORMAL_MODE);
   setOperationClockMode(CLK_LOW_SPEED_MODE);
   last_check_millis = millis();
 }
 
 void wakeup() {
   setOperationClockMode(CLK_HIGH_SPEED_MODE);
+  setPowerManagementMode(PM_STOP_MODE);
   oled.ssd1306WriteCmd(0x0af); // display on
   wake_flag = false;
   is_active = true;
@@ -114,31 +119,39 @@ void wakeup() {
 }
 
 void loop() {
+  unsigned int span;
+  unsigned char key;
   
-  // get command from BLE module
-  int span = millis() - last_check_millis;
-  if (is_active) {
-    if ( span > 5000 || span < 0) {
-      checkBLE();
-      last_check_millis = millis();
+  // check BLE
+  do {
+    span = millis() - last_check_millis;
+
+    if (is_active) {
+      span = millis() - last_check_millis;
+      if ( span > 5000 || span < 0) {
+        setPowerManagementMode(PM_NORMAL_MODE);
+        checkBLE();
+        setPowerManagementMode(PM_STOP_MODE);
+        last_check_millis = millis();
+      }
+      
+      // sleep if idle
+      if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
+        sleep();
+      }
+    }
+    else {
+      if ( span > 1500 || span < 0) {
+        setOperationClockMode(CLK_HIGH_SPEED_MODE);
+        checkBLE();
+        setOperationClockMode(CLK_LOW_SPEED_MODE);
+        last_check_millis = millis();
+      }
     }
 
-    // sleep if idle
-    if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
-      sleep();
-    }
-  }
-  else {
-    if ( span > 1500 || span < 0) {
-      setOperationClockMode(CLK_HIGH_SPEED_MODE);
-      checkBLE();
-      setOperationClockMode(CLK_LOW_SPEED_MODE);
-      last_check_millis = millis();
-    }
-  }
-
-  // read key
-  unsigned char key = key_read();
+    key = key_read();
+    
+  } while(is_active == false && wake_flag == false);
 
   // turn display on if the display is off
   if (wake_flag == true) {
@@ -146,20 +159,19 @@ void loop() {
     key = KEY_NONE;
   }
   
-  if (is_active) {
-    if (has_notification) {
-      checkNotification();
-    }
-    
-    // draw screen if the display is on
-    if (mode_current == MODE_TIME) {
-      drawWatch(key);
-    } else if (mode_current == MODE_MENU) {
-      drawMenu(key);
-    } else if (mode_current == MODE_SETTIME) {
-      drawSetTime(key);
-    }
-    
-    delay(50);
+  // check notification message
+  if (has_notification) {
+    checkNotification();
   }
+  
+  // draw screen
+  if (mode_current == MODE_TIME) {
+    drawWatch(key);
+  } else if (mode_current == MODE_MENU) {
+    drawMenu(key);
+  } else if (mode_current == MODE_SETTIME) {
+    drawSetTime(key);
+  }
+  
+  delay(50);
 }
