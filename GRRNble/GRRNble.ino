@@ -102,6 +102,7 @@ void setup() {
 }
 
 void sleep() {
+  oled.clear();
   oled.ssd1306WriteCmd(0x0ae); // display off
   is_active = false;
   setPowerManagementMode(PM_NORMAL_MODE);
@@ -123,35 +124,30 @@ void loop() {
   unsigned char key;
   
   // check BLE
-  do {
+  if (is_active == true) {
     span = millis() - last_check_millis;
-
-    if (is_active) {
-      span = millis() - last_check_millis;
-      if ( span > 5000 || span < 0) {
-        setPowerManagementMode(PM_NORMAL_MODE);
-        checkBLE();
-        setPowerManagementMode(PM_STOP_MODE);
-        last_check_millis = millis();
-      }
-      
-      // sleep if idle
-      if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
-        sleep();
-      }
+    if ( span > 5000 || span < 0) {
+      setPowerManagementMode(PM_NORMAL_MODE);
+      checkBLE();
+      setPowerManagementMode(PM_STOP_MODE);
+      last_check_millis = millis();
     }
-    else {
+    
+    key = key_read(); 
+  } else {
+    // stanby loop
+    while(wake_flag == false) {
+      span = millis() - last_check_millis;
       if ( span > 1500 || span < 0) {
         setOperationClockMode(CLK_HIGH_SPEED_MODE);
         checkBLE();
         setOperationClockMode(CLK_LOW_SPEED_MODE);
         last_check_millis = millis();
       }
-    }
 
-    key = key_read();
-    
-  } while(is_active == false && wake_flag == false);
+      key = key_read(); 
+    }
+  }
 
   // turn display on if the display is off
   if (wake_flag == true) {
@@ -172,6 +168,12 @@ void loop() {
   } else if (mode_current == MODE_SETTIME) {
     drawSetTime(key);
   }
-  
+
+  // delay  
   delay(50);
+  
+  // sleep if idle
+  if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
+    sleep();
+  }
 }
