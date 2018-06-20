@@ -98,6 +98,21 @@ void setup() {
   last_millis = millis();
 }
 
+void sleep() {
+  oled.ssd1306WriteCmd(0x0ae); // display off
+  is_active = false;
+  setOperationClockMode(CLK_LOW_SPEED_MODE);
+  last_check_millis = millis();
+}
+
+void wakeup() {
+  setOperationClockMode(CLK_HIGH_SPEED_MODE);
+  oled.ssd1306WriteCmd(0x0af); // display on
+  wake_flag = false;
+  is_active = true;
+  last_millis = millis();
+}
+
 void loop() {
   
   // get command from BLE module
@@ -110,10 +125,7 @@ void loop() {
 
     // sleep if idle
     if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
-      oled.ssd1306WriteCmd(0x0ae); // display off
-      is_active = false;
-      setOperationClockMode(CLK_LOW_SPEED_MODE);
-      last_check_millis = millis();
+      sleep();
     }
   }
   else {
@@ -130,11 +142,7 @@ void loop() {
 
   // turn display on if the display is off
   if (wake_flag == true) {
-    setOperationClockMode(CLK_HIGH_SPEED_MODE);
-    oled.ssd1306WriteCmd(0x0af); // display on
-    wake_flag = false;
-    is_active = true;
-    last_millis = millis();
+    wakeup();
     key = KEY_NONE;
   }
   
