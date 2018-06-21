@@ -27,6 +27,7 @@ int buzzer_volume = 3;                              // initial volume index
 // settings for display
 const int DISPLAY_CONTRASTS[4] = { 0, 50, 128, 255 };  // 4 steps contrast
 int display_contrast = 3;
+boolean display_always_on = true;
 
 // settings for power saving
 const unsigned long DELAY_SLEEPS[4] = {0, 20000, 10000, 5000};  // sleep (millisec, 0=always on)
@@ -108,15 +109,17 @@ void setup() {
 }
 
 void sleep() {
-  // Set Contrast
-  oled.setContrast(0);
+  oled.set1X();
   oled.clear();
-//  // Disable charge pump
-//  oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
-//  oled.ssd1306WriteCmd(0x10);
-//  // Set Display off
-//  oled.ssd1306WriteCmd(0x0ae);
-  drawSmallWatch();
+  if (display_always_on == true) {
+    drawSmallWatch();
+  } else {
+    // Disable charge pump
+    oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
+    oled.ssd1306WriteCmd(0x10);
+    // Set Display off
+    oled.ssd1306WriteCmd(0x0ae);
+  }
 
   is_active = false;
   setPowerManagementMode(PM_NORMAL_MODE);
@@ -128,13 +131,13 @@ void wakeup() {
   setOperationClockMode(CLK_HIGH_SPEED_MODE);
   setPowerManagementMode(PM_STOP_MODE);
 
-//  // Enable charge pump
-//  oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
-//  oled.ssd1306WriteCmd(0x14);
-//  // Set Display on
-//  oled.ssd1306WriteCmd(0x0af);
-  // Set Contrast
-  oled.setContrast(DISPLAY_CONTRASTS[display_contrast]);
+  if (display_always_on == false) {
+    // Enable charge pump
+    oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
+    oled.ssd1306WriteCmd(0x14);
+    // Set Display on
+    oled.ssd1306WriteCmd(0x0af);
+  }
   oled.clear();
   
   wake_flag = false;

@@ -6,9 +6,9 @@ boolean changed = false;
 #define MARGIN_X 54
 #define ANIMATION_STEPS 9
 
-#define MENU_COUNT 5
+#define MENU_COUNT 6
 #define MENU_TITLE "Setup"
-const char *MENU_SUB_TITLE[MENU_COUNT] = {"BACK", "CONTRAST", "SOUND", "POWER SAVING", "DATE & TIME"};
+const char *MENU_SUB_TITLE[MENU_COUNT] = {"BACK", "CONTRAST", "SOUND", "POWER SAVING", "STANBY DISP", "DATE & TIME"};
 
 void drawMenu(unsigned char key) {
   // return if idle
@@ -37,6 +37,9 @@ void drawMenu(unsigned char key) {
       delay_sleep++;
       if (delay_sleep>3) delay_sleep = 0;
     } else if (cursol == 4) {
+      // Stanby Display
+      display_always_on = !display_always_on;
+    } else if (cursol == 5) {
       // Date & Time
       prev_cursol = -1;
       oled.clear();
@@ -95,6 +98,13 @@ void drawMenu(unsigned char key) {
       } else if (cursol == 3) {
         // Power Saving
         oled.write(128 + delay_sleep);
+      } else if (cursol == 4) {
+        // Stanby Display
+        if (display_always_on == true) {
+          oled.write('Y');
+        } else {
+          oled.write('N');
+        }
       }
       changed=false;
     }
@@ -116,7 +126,8 @@ void drawMenuSub(int x) {
   printWithCheckBoundry(x + MARGIN_X * 1, "|");
   printWithCheckBoundry(x + MARGIN_X * 2, "}");
   printWithCheckBoundry(x + MARGIN_X * 3, "~");
-  printWithCheckBoundry(x + MARGIN_X * 4, "@");
+  printWithCheckBoundry(x + MARGIN_X * 4, "~");
+  printWithCheckBoundry(x + MARGIN_X * 5, "@");
 
 }
 

@@ -12,7 +12,7 @@ void notifyBLE() {
   voltage = getVoltage();
   temperature = getAvgTempareture();
 
-  if (is_active == false) {
+  if (is_active == false && display_always_on == true) {
     drawSmallWatch();
   }
 }
