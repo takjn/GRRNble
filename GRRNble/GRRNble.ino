@@ -99,11 +99,18 @@ void setup() {
 
   voltage = getVoltage();
   last_millis = millis();
+  
+  // Set Pre-charge Period
+  oled.ssd1306WriteCmd(SSD1306_SETPRECHARGE);
+  oled.ssd1306WriteCmd(0x00);  // 0xF1(default)
+  oled.ssd1306WriteCmd(SSD1306_SETVCOMDETECT);
+  oled.ssd1306WriteCmd(0x00);  // 0x00, 0x20, 0x30, 0x40 (default)
 }
 
 void sleep() {
+  // Set Contrast
+  oled.setContrast(0);
   oled.clear();
-
   // Disable charge pump
   oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
   oled.ssd1306WriteCmd(0x10);
@@ -125,6 +132,9 @@ void wakeup() {
   oled.ssd1306WriteCmd(0x14);
   // Set Display on
   oled.ssd1306WriteCmd(0x0af);
+  // Set Contrast
+  oled.setContrast(DISPLAY_CONTRASTS[display_contrast]);
+  oled.clear();
   
   wake_flag = false;
   is_active = true;
@@ -140,6 +150,7 @@ void loop() {
     span = millis() - last_check_millis;
     if ( span > 5000 || span < 0) {
       setPowerManagementMode(PM_NORMAL_MODE);
+      notifyBLE();
       checkBLE();
       setPowerManagementMode(PM_STOP_MODE);
       last_check_millis = millis();
@@ -152,6 +163,7 @@ void loop() {
       span = millis() - last_check_millis;
       if ( span > 1500 || span < 0) {
         setOperationClockMode(CLK_HIGH_SPEED_MODE);
+        notifyBLE();
         checkBLE();
         setOperationClockMode(CLK_LOW_SPEED_MODE);
         last_check_millis = millis();

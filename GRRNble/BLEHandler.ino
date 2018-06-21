@@ -1,10 +1,19 @@
 String last_command = "";
+unsigned int last_minute = 99;
 
-void checkBLE() {
-  String command = "";
+void notifyBLE() {
+  rtc_get_time(&datetime);
+  if (datetime.min == last_minute) {
+    return;
+  }
+  last_minute = datetime.min;
   
   voltage = getVoltage();
   temperature = getAvgTempareture();
+}
+
+void checkBLE() {
+  String command = "";
   
   // trash garbage
   while(Serial1.available() > 0) {
