@@ -8,8 +8,21 @@ void notifyBLE() {
   }
   last_minute = datetime.min;
   
+  // update battery level and temperature
   voltage = getVoltage();
   temperature = getAvgTempareture();
+
+  if (is_active == false) {
+    drawSmallWatch();
+  }
+}
+
+void drawSmallWatch() {
+  // update time
+  oled.setCursor(36, 4);
+  printWithZero(datetime.hour);
+  oled.print(':');
+  printWithZero(datetime.min);
 }
 
 void checkBLE() {

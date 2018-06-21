@@ -26,7 +26,7 @@ int buzzer_volume = 3;                              // initial volume index
 
 // settings for display
 const int DISPLAY_CONTRASTS[4] = { 0, 50, 128, 255 };  // 4 steps contrast
-int display_contrast = 1;
+int display_contrast = 3;
 
 // settings for power saving
 const unsigned long DELAY_SLEEPS[4] = {0, 20000, 10000, 5000};  // sleep (millisec, 0=always on)
@@ -111,11 +111,12 @@ void sleep() {
   // Set Contrast
   oled.setContrast(0);
   oled.clear();
-  // Disable charge pump
-  oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
-  oled.ssd1306WriteCmd(0x10);
-  // Set Display off
-  oled.ssd1306WriteCmd(0x0ae);
+//  // Disable charge pump
+//  oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
+//  oled.ssd1306WriteCmd(0x10);
+//  // Set Display off
+//  oled.ssd1306WriteCmd(0x0ae);
+  drawSmallWatch();
 
   is_active = false;
   setPowerManagementMode(PM_NORMAL_MODE);
@@ -127,11 +128,11 @@ void wakeup() {
   setOperationClockMode(CLK_HIGH_SPEED_MODE);
   setPowerManagementMode(PM_STOP_MODE);
 
-  // Enable charge pump
-  oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
-  oled.ssd1306WriteCmd(0x14);
-  // Set Display on
-  oled.ssd1306WriteCmd(0x0af);
+//  // Enable charge pump
+//  oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
+//  oled.ssd1306WriteCmd(0x14);
+//  // Set Display on
+//  oled.ssd1306WriteCmd(0x0af);
   // Set Contrast
   oled.setContrast(DISPLAY_CONTRASTS[display_contrast]);
   oled.clear();
