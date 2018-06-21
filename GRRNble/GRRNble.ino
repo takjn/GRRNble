@@ -103,7 +103,13 @@ void setup() {
 
 void sleep() {
   oled.clear();
-  oled.ssd1306WriteCmd(0x0ae); // display off
+
+  // Disable charge pump
+  oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
+  oled.ssd1306WriteCmd(0x10);
+  // Set Display off
+  oled.ssd1306WriteCmd(0x0ae);
+
   is_active = false;
   setPowerManagementMode(PM_NORMAL_MODE);
   setOperationClockMode(CLK_LOW_SPEED_MODE);
@@ -113,7 +119,13 @@ void sleep() {
 void wakeup() {
   setOperationClockMode(CLK_HIGH_SPEED_MODE);
   setPowerManagementMode(PM_STOP_MODE);
-  oled.ssd1306WriteCmd(0x0af); // display on
+
+  // Enable charge pump
+  oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
+  oled.ssd1306WriteCmd(0x14);
+  // Set Display on
+  oled.ssd1306WriteCmd(0x0af);
+  
   wake_flag = false;
   is_active = true;
   last_millis = millis();
