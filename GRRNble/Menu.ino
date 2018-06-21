@@ -8,7 +8,7 @@ boolean changed = false;
 
 #define MENU_COUNT 6
 #define MENU_TITLE "Setup"
-const char *MENU_SUB_TITLE[MENU_COUNT] = {"BACK", "CONTRAST", "SOUND", "POWER SAVING", "STANBY DISP", "DATE & TIME"};
+const char *MENU_SUB_TITLE[MENU_COUNT] = {"BACK", "CONTRAST", "SOUND", "POWER SAVING", "ALWAYS ON", "DATE & TIME"};
 
 void drawMenu(unsigned char key) {
   // return if idle
@@ -121,12 +121,17 @@ void drawMenu(unsigned char key) {
 void drawMenuSub(int x) {
   oled.setCursor(0, 3);
   oled.clearToEOL();
+
+  String dao = "N";
+  if (display_always_on == true) {
+    dao = "Y";
+  }
   
   printWithCheckBoundry(x + MARGIN_X * 0, "{");
   printWithCheckBoundry(x + MARGIN_X * 1, "|");
   printWithCheckBoundry(x + MARGIN_X * 2, "}");
   printWithCheckBoundry(x + MARGIN_X * 3, "~");
-  printWithCheckBoundry(x + MARGIN_X * 4, "~");
+  printWithCheckBoundry(x + MARGIN_X * 4, dao);
   printWithCheckBoundry(x + MARGIN_X * 5, "@");
 
 }
