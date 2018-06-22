@@ -28,8 +28,8 @@
     <!-- Alert dialog -->
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="notification_listener_service">Notification Service</string>
-    <string name="notification_listener_service_explanation">Please turn the notification listener service on.</string>
+    <string name="notification_listener_service">通知へのアクセス</string>
+    <string name="notification_listener_service_explanation">GRRNbleに対して通知へのアクセスを許可してください。</string>
 
     <!-- Menu -->
     <string name="debug">Debug</string>
