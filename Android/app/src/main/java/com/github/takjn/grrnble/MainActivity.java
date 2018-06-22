@@ -1,5 +1,6 @@
 package com.github.takjn.grrnble;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
@@ -196,6 +197,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onResume();
         requestBluetoothFeature();
+
+        if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.READ_PHONE_STATE}, 1);
+        }
+
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+        }
 
         if (mDevice == null && BLEService.mDevice != null) {
             mDevice = BLEService.mDevice;
