@@ -58,6 +58,7 @@ gen-external-apklibs
 # Covers files to be ignored for android development using Android Studio.
 
 # Built application files
+app/release/
 
 # Files for the ART/Dalvik VM
 

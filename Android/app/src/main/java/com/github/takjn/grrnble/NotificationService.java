@@ -30,6 +30,7 @@ public class NotificationService extends NotificationListenerService {
             case "com.android.incallui":
             case "com.google.android.googlequicksearchbox":
             case "com.kddi.android.cmail":
+            case "com.android.settings":
                 return;
             default:
                 break;
