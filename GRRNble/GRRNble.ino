@@ -26,7 +26,8 @@ int buzzer_volume = 3;                              // initial volume index
 
 // settings for display
 const int DISPLAY_CONTRASTS[4] = { 0, 50, 128, 255 };  // 4 steps contrast
-int display_contrast = 1;
+int display_contrast = 3;
+boolean display_always_on = true;
 
 // settings for power saving
 const unsigned long DELAY_SLEEPS[4] = {0, 20000, 10000, 5000};  // sleep (millisec, 0=always on)
@@ -35,8 +36,8 @@ boolean wake_flag = false;
 boolean is_active = true;
 
 // settings for battery service
-#define MAX_VOLTAGE 3.7
-#define MAX_VOLTAGE_DROP 0.6
+#define MAX_VOLTAGE 3.3
+#define MAX_VOLTAGE_DROP 0.3
 int voltage = 0;
 
 // settings for temperature service
@@ -77,12 +78,15 @@ void setup() {
   oled.setContrast(DISPLAY_CONTRASTS[display_contrast]);
   oled.clear();
 
-  // setup for voltage measurement
+  // setup voltage measurement
   analogReference(INTERNAL);
   pinMode(VOLTAGE_OUT_PIN, OUTPUT);
   pinMode(VOLTAGE_CHK_PIN, INPUT);
   
-  // setup for the power management
+  // setup power management
+  setPowerManagementMode(PM_STOP_MODE);
+
+  // setup pins
   pinMode(BUZZER_PIN, OUTPUT);
   pinMode(KEY_PREV_PIN, INPUT_PULLUP);
   pinMode(KEY_SELECT_PIN, INPUT_PULLUP);
@@ -96,62 +100,108 @@ void setup() {
 
   voltage = getVoltage();
   last_millis = millis();
+  
+  // Set Pre-charge Period
+  oled.ssd1306WriteCmd(SSD1306_SETPRECHARGE);
+  oled.ssd1306WriteCmd(0x00);  // 0xF1(default)
+  oled.ssd1306WriteCmd(SSD1306_SETVCOMDETECT);
+  oled.ssd1306WriteCmd(0x00);  // 0x00, 0x20, 0x30, 0x40 (default)
+}
+
+void sleep() {
+  oled.set1X();
+  oled.clear();
+  if (display_always_on == true) {
+    drawSmallWatch();
+  } else {
+    // Disable charge pump
+    oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
+    oled.ssd1306WriteCmd(0x10);
+    // Set Display off
+    oled.ssd1306WriteCmd(0x0ae);
+  }
+
+  is_active = false;
+  setPowerManagementMode(PM_NORMAL_MODE);
+  setOperationClockMode(CLK_LOW_SPEED_MODE);
+  last_check_millis = millis();
+}
+
+void wakeup() {
+  setOperationClockMode(CLK_HIGH_SPEED_MODE);
+  setPowerManagementMode(PM_STOP_MODE);
+
+  if (display_always_on == false) {
+    // Enable charge pump
+    oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
+    oled.ssd1306WriteCmd(0x14);
+    // Set Display on
+    oled.ssd1306WriteCmd(0x0af);
+  }
+  oled.clear();
+  
+  wake_flag = false;
+  is_active = true;
+  last_millis = millis();
 }
 
 void loop() {
+  unsigned int span;
+  unsigned char key;
   
-  // get command from BLE module
-  int span = millis() - last_check_millis;
-  if (is_active) {
+  // check BLE
+  if (is_active == true) {
+    span = millis() - last_check_millis;
     if ( span > 5000 || span < 0) {
+      setPowerManagementMode(PM_NORMAL_MODE);
+      notifyBLE();
       checkBLE();
+      setPowerManagementMode(PM_STOP_MODE);
       last_check_millis = millis();
     }
+    
+    key = key_read(); 
+  } else {
+    // stanby loop
+    while(wake_flag == false) {
+      span = millis() - last_check_millis;
+      if ( span > 1500 || span < 0) {
+        setOperationClockMode(CLK_HIGH_SPEED_MODE);
+        notifyBLE();
+        checkBLE();
+        setOperationClockMode(CLK_LOW_SPEED_MODE);
+        last_check_millis = millis();
+      }
 
-    // sleep if idle
-    if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
-      oled.ssd1306WriteCmd(0x0ae); // display off
-      is_active = false;
-      setOperationClockMode(CLK_LOW_SPEED_MODE);
-      last_check_millis = millis();
+      key = key_read(); 
     }
   }
-  else {
-    if ( span > 1500 || span < 0) {
-      setOperationClockMode(CLK_HIGH_SPEED_MODE);
-      checkBLE();
-      setOperationClockMode(CLK_LOW_SPEED_MODE);
-      last_check_millis = millis();
-    }
-  }
-
-  // read key
-  unsigned char key = key_read();
 
   // turn display on if the display is off
   if (wake_flag == true) {
-    setOperationClockMode(CLK_HIGH_SPEED_MODE);
-    oled.ssd1306WriteCmd(0x0af); // display on
-    wake_flag = false;
-    is_active = true;
-    last_millis = millis();
+    wakeup();
     key = KEY_NONE;
   }
   
-  if (is_active) {
-    if (has_notification) {
-      checkNotification();
-    }
-    
-    // draw screen if the display is on
-    if (mode_current == MODE_TIME) {
-      drawWatch(key);
-    } else if (mode_current == MODE_MENU) {
-      drawMenu(key);
-    } else if (mode_current == MODE_SETTIME) {
-      drawSetTime(key);
-    }
-    
-    delay(50);
+  // check notification message
+  if (has_notification) {
+    checkNotification();
+  }
+  
+  // draw screen
+  if (mode_current == MODE_TIME) {
+    drawWatch(key);
+  } else if (mode_current == MODE_MENU) {
+    drawMenu(key);
+  } else if (mode_current == MODE_SETTIME) {
+    drawSetTime(key);
+  }
+
+  // delay  
+  delay(50);
+  
+  // sleep if idle
+  if(delay_sleep > 0 && (millis() - last_millis) > DELAY_SLEEPS[delay_sleep]) {
+    sleep();
   }
 }

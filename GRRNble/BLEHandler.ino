@@ -1,10 +1,32 @@
 String last_command = "";
+unsigned int last_minute = 99;
+
+void notifyBLE() {
+  rtc_get_time(&datetime);
+  if (datetime.min == last_minute) {
+    return;
+  }
+  last_minute = datetime.min;
+  
+  // update battery level and temperature
+  voltage = getVoltage();
+  temperature = getAvgTempareture();
+
+  if (is_active == false && display_always_on == true) {
+    drawSmallWatch();
+  }
+}
+
+void drawSmallWatch() {
+  // update time
+  oled.setCursor(36, 4);
+  printWithZero(datetime.hour);
+  oled.print(':');
+  printWithZero(datetime.min);
+}
 
 void checkBLE() {
   String command = "";
-  
-  voltage = getVoltage();
-  temperature = getAvgTempareture();
   
   // trash garbage
   while(Serial1.available() > 0) {
