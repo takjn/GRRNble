@@ -108,6 +108,8 @@ GRRNbleフォルダ内にIDE for GRのプロジェクト一式があります。
 
 ### Android companion app
 
+GooglePlayから[アプリ](https://play.google.com/store/apps/details?id=com.github.takjn.grrnble)をインストールしてください。
+
 Androidフォルダ内にAndAndroid Studioのプロジェクト一式があります。Android 8.0でのみ動作確認しています。
 
 
