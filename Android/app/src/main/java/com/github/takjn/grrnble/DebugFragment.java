@@ -21,8 +21,6 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
     private Button mButtonWriteHello;
     private Button mButtonWriteWorld;
 
-    private DebugListener mDebugListener;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -52,38 +50,37 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
-        if (context instanceof DebugListener) {
-            mDebugListener = (DebugListener) context;
-        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mDebugListener = null;
     }
 
     @Override
     public void onClick(View v) {
-        if (mDebugListener == null) {
-            return;
-        }
-
         if (mButtonReadChara1.getId() == v.getId()) {
-            mDebugListener.onReadBatteryLevelCharacteristic();
+            Intent intent = new Intent(getContext(), BLEService.BLECommandIntentReceiver.class);
+            intent.setAction("READ");
+            intent.putExtra("service", BLEService.UUID_BATTERY_SERVICE);
+            intent.putExtra("characteristic", BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC);
+            getContext().sendBroadcast(intent);
             return;
         }
         if (mButtonReadChara2.getId() == v.getId()) {
-            mDebugListener.onReadPrivateCharacteristic();
+            Intent intent = new Intent(getContext(), BLEService.BLECommandIntentReceiver.class);
+            intent.setAction("READ");
+            intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
+            intent.putExtra("characteristic", BLEService.UUID_PRIVATE_CHARACTERISTIC);
+            getContext().sendBroadcast(intent);
             return;
         }
         if (mButtonWriteHello.getId() == v.getId()) {
-            mDebugListener.onWritePrivateCharacteristic("Hello");
+            BLEService.sendToWatch(getContext(), "Hello!");
             return;
         }
         if (mButtonWriteWorld.getId() == v.getId()) {
-            mDebugListener.onWritePrivateCharacteristic("World");
+            BLEService.sendToWatch(getContext(), "World!");
             return;
         }
     }
@@ -96,12 +93,4 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
         mTextViewReadChara2.setText(value);
     }
 
-    public interface DebugListener {
-        public void onReadBatteryLevelCharacteristic();
-
-        public void onReadPrivateCharacteristic();
-
-        public void onWritePrivateCharacteristic(String message);
-    }
-    
 }

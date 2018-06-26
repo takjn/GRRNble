@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, DebugFragment.DebugListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "MainActivity";
 
@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String datetime = "DT," + sdf.format(cl.getTime());
 
             Log.d(TAG, datetime);
-            onWritePrivateCharacteristic(datetime);
+            BLEService.sendToWatch(this, datetime);
 
             return true;
         }
@@ -455,35 +455,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
         return (alertDialogBuilder.create());
-    }
-
-    /**
-     * DebugListener.
-     */
-    @Override
-    public void onWritePrivateCharacteristic(String message) {
-        // send a explicit broadcast intent
-        BLEService.sendToWatch(getApplicationContext(), message);
-    }
-
-    @Override
-    public void onReadBatteryLevelCharacteristic() {
-        // send a explicit broadcast intent
-        Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
-        intent.setAction("READ");
-        intent.putExtra("service", BLEService.UUID_BATTERY_SERVICE);
-        intent.putExtra("characteristic", BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC);
-        sendBroadcast(intent);
-    }
-
-    @Override
-    public void onReadPrivateCharacteristic() {
-        // send a explicit broadcast intent
-        Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
-        intent.setAction("READ");
-        intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
-        intent.putExtra("characteristic", BLEService.UUID_PRIVATE_CHARACTERISTIC);
-        sendBroadcast(intent);
     }
 
 }

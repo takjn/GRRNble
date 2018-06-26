@@ -65,12 +65,6 @@ public class BLEIntentReceiver extends BroadcastReceiver {
 
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context.getApplicationContext());
         manager.sendBroadcast(intent);
-
-//        Intent intent = new Intent(context, BLEIntentReceiver.class);
-//        intent.setAction(action);
-//        intent.putExtra(EXTRA_UUID, uuid);
-//        intent.putExtra(EXTRA_VALUE, value);
-//        context.sendBroadcast(intent);
     }
 
     public void unregister() {
