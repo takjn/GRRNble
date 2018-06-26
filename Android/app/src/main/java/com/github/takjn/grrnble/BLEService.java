@@ -78,7 +78,7 @@ public class BLEService extends Service {
                     break;
             }
 
-            sendBLEIntent("READ", characteristic.getUuid().toString(), value);
+            BLEIntentReceiver.sendBroadcast(getApplicationContext(), BLEIntentReceiver.ACTION_READ, characteristic.getUuid().toString(), value);
         }
 
         @Override
@@ -102,15 +102,7 @@ public class BLEService extends Service {
                     break;
             }
 
-            sendBLEIntent("CHANGED", characteristic.getUuid().toString(), value);
-        }
-
-        private void sendBLEIntent(String action, String uuid, String value) {
-            Intent intent = new Intent(getApplicationContext(), MainActivity.BLEIntentReceiver.class);
-            intent.setAction(action);
-            intent.putExtra("uuid", uuid);
-            intent.putExtra("value", value);
-            sendBroadcast(intent);
+            BLEIntentReceiver.sendBroadcast(getApplicationContext(), BLEIntentReceiver.ACTION_CHANGED, characteristic.getUuid().toString(), value);
         }
     };
 

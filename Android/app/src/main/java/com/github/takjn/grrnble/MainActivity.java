@@ -15,6 +15,7 @@ import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.ParcelUuid;
@@ -56,9 +57,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private CheckBox mCheckBoxBatteryLevel;
     private CheckBox mCheckBoxTemperature;
     private ProgressBar mProgressBar;
-    private static TextView mTextViewBatteryLevel;
-    private static TextView mTextViewTemperature;
-    private static DebugFragment mFragmentDebug;
+    private TextView mTextViewBatteryLevel;
+    private TextView mTextViewTemperature;
+    private DebugFragment mFragmentDebug;
+
+    private BLEIntentReceiver mBLEIntentReceiver;
 
     /**
      * Device scan callback
@@ -189,6 +192,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCheckBoxTemperature.setEnabled(false);
         mProgressBar.setVisibility(ProgressBar.GONE);
         hideDebugFragment();
+
+        mBLEIntentReceiver = BLEIntentReceiver.register(getApplicationContext(), new BLEIntentReceiver.Callback() {
+            @Override
+            public void onEventInvoked(String action, String uuid, String value) {
+                switch (action) {
+                    case BLEIntentReceiver.ACTION_READ:
+                        if (mFragmentDebug != null) {
+                            if (uuid.equals(BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC)) {
+                                mFragmentDebug.setChara1(value);
+
+                            } else if (uuid.equals(BLEService.UUID_PRIVATE_CHARACTERISTIC)) {
+                                mFragmentDebug.setChara2(value);
+                            }
+                        }
+                        break;
+                    case BLEIntentReceiver.ACTION_CHANGED:
+                        if (uuid.equals(BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC)) {
+                            mTextViewBatteryLevel.setText(value);
+                        } else if (uuid.equals(BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC)) {
+                            mTextViewTemperature.setText(value);
+                        }
+                        break;
+                }
+            }
+        });
     }
 
     @Override
@@ -220,6 +248,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        if(mBLEIntentReceiver!=null) {
+            mBLEIntentReceiver.unregister();
+        }
     }
 
     private void requestBluetoothFeature() {
@@ -439,8 +471,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // send a explicit broadcast intent
         Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
         intent.setAction("READ");
-        intent.putExtra("service", "0000180f-0000-1000-8000-00805f9b34fb");
-        intent.putExtra("characteristic", "00002a19-0000-1000-8000-00805f9b34fb");
+        intent.putExtra("service", BLEService.UUID_BATTERY_SERVICE);
+        intent.putExtra("characteristic", BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC);
         sendBroadcast(intent);
     }
 
@@ -449,48 +481,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // send a explicit broadcast intent
         Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
         intent.setAction("READ");
-        intent.putExtra("service", "3B382559-223F-48CA-81B4-E151598F661B");
-        intent.putExtra("characteristic", "B2332443-1DD3-407B-B3E6-5D349CAF5368");
+        intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
+        intent.putExtra("characteristic", BLEService.UUID_PRIVATE_CHARACTERISTIC);
         sendBroadcast(intent);
     }
 
-    /**
-     * BroadcastReceiver.
-     * Receive a broadcast-intent and read characteristics.
-     */
-    public static class BLEIntentReceiver extends BroadcastReceiver {
-        private static final String TAG = "BLEIntentReceiver";
-
-        DebugFragment.DebugListener mDebugListener;
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive");
-
-            String uuid = intent.getStringExtra("uuid");
-            String value = intent.getStringExtra("value");
-            String action = intent.getAction();
-
-            switch (action) {
-                case "READ":
-                    if (mFragmentDebug != null) {
-                        if (uuid.equals(BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC)) {
-                            mFragmentDebug.setChara1(value);
-
-                        } else if (uuid.equals(BLEService.UUID_PRIVATE_CHARACTERISTIC)) {
-                            mFragmentDebug.setChara2(value);
-                        }
-                    }
-                    break;
-                case "CHANGED":
-                    if (uuid.equals(BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC)) {
-                        mTextViewBatteryLevel.setText(value);
-                    } else if (uuid.equals(BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC)) {
-                        mTextViewTemperature.setText(value);
-                    }
-                    break;
-            }
-        }
-
-    }
 }
