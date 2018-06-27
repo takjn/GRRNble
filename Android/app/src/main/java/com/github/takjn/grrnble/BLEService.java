@@ -78,7 +78,7 @@ public class BLEService extends Service {
                     break;
             }
 
-            BLEIntentReceiver.sendBroadcast(getApplicationContext(), BLEIntentReceiver.ACTION_READ, characteristic.getUuid().toString(), value);
+            BLEResultReceiver.sendBroadcast(getApplicationContext(), BLEResultReceiver.ACTION_READ, characteristic.getUuid().toString(), value);
         }
 
         @Override
@@ -102,7 +102,7 @@ public class BLEService extends Service {
                     break;
             }
 
-            BLEIntentReceiver.sendBroadcast(getApplicationContext(), BLEIntentReceiver.ACTION_CHANGED, characteristic.getUuid().toString(), value);
+            BLEResultReceiver.sendBroadcast(getApplicationContext(), BLEResultReceiver.ACTION_CHANGED, characteristic.getUuid().toString(), value);
         }
     };
 
@@ -152,7 +152,7 @@ public class BLEService extends Service {
      * @param message Message to send
      */
     public static void sendToWatch(Context context, String message) {
-        Intent intent = new Intent(context, BLEService.BLECommandIntentReceiver.class);
+        Intent intent = new Intent(context, BLEService.BLECommandReceiver.class);
         intent.setAction("WRITE");
         intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
         intent.putExtra("characteristic", BLEService.UUID_PRIVATE_CHARACTERISTIC);
@@ -164,8 +164,8 @@ public class BLEService extends Service {
      * BroadcastReceiver.
      * Receive a broadcast-intent and read characteristics.
      */
-    public static class BLECommandIntentReceiver extends BroadcastReceiver {
-        private static final String TAG = "BLECommandIntent";
+    public static class BLECommandReceiver extends BroadcastReceiver {
+        private static final String TAG = "BLECommandReceiver";
 
         @Override
         public void onReceive(Context context, Intent intent) {

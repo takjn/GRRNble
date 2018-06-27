@@ -30,7 +30,7 @@
 
         <service android:name=".BLEService"></service>
 
-        <receiver android:name=".BLEService$BLECommandIntentReceiver" />
+        <receiver android:name=".BLEService$BLECommandReceiver" />
         <receiver android:name=".PhoneCallReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />

@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView mTextViewTemperature;
     private DebugFragment mFragmentDebug;
 
-    private BLEIntentReceiver mBLEIntentReceiver;
+    private BLEResultReceiver mBLEIntentReceiver;
 
     /**
      * Device scan callback
@@ -193,11 +193,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mProgressBar.setVisibility(ProgressBar.GONE);
         hideDebugFragment();
 
-        mBLEIntentReceiver = BLEIntentReceiver.register(getApplicationContext(), new BLEIntentReceiver.Callback() {
+        mBLEIntentReceiver = BLEResultReceiver.register(getApplicationContext(), new BLEResultReceiver.Callback() {
             @Override
             public void onEventInvoked(String action, String uuid, String value) {
                 switch (action) {
-                    case BLEIntentReceiver.ACTION_READ:
+                    case BLEResultReceiver.ACTION_READ:
                         if (mFragmentDebug != null) {
                             if (uuid.equals(BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC)) {
                                 mFragmentDebug.setChara1(value);
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         }
                         break;
-                    case BLEIntentReceiver.ACTION_CHANGED:
+                    case BLEResultReceiver.ACTION_CHANGED:
                         if (uuid.equals(BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC)) {
                             mTextViewBatteryLevel.setText(value);
                         } else if (uuid.equals(BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC)) {
@@ -317,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (mCheckBoxBatteryLevel.getId() == v.getId()) {
-            Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
+            Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandReceiver.class);
             intent.setAction("SET_NOTIFY");
             intent.putExtra("service", BLEService.UUID_BATTERY_SERVICE);
             intent.putExtra("characteristic", BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC);
@@ -326,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
         if (mCheckBoxTemperature.getId() == v.getId()) {
-            Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandIntentReceiver.class);
+            Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandReceiver.class);
             intent.setAction("SET_NOTIFY");
             intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
             intent.putExtra("characteristic", BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC);

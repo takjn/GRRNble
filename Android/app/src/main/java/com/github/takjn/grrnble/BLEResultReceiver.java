@@ -12,8 +12,8 @@ import android.util.Log;
  * Receive a broadcast-intent and read characteristics.
  * https://qiita.com/kazhida/items/91a15a1cf8ec0c443dbb
  */
-public class BLEIntentReceiver extends BroadcastReceiver {
-    private static final String TAG = "BLEIntentReceiver";
+public class BLEResultReceiver extends BroadcastReceiver {
+    private static final String TAG = "BluetoothResultReceiver";
 
     public static final String ACTION_READ = "com.github.takjn.grrnble.ACTION_READ";
     public static final String ACTION_CHANGED = "com.github.takjn.grrnble.ACTION_CHANGED";
@@ -29,7 +29,7 @@ public class BLEIntentReceiver extends BroadcastReceiver {
     private LocalBroadcastManager manager;
 
 
-    private BLEIntentReceiver(Context context, Callback callback) {
+    private BLEResultReceiver(Context context, Callback callback) {
         super();
         this.callback = callback;
         manager = LocalBroadcastManager.getInstance(context.getApplicationContext());
@@ -41,8 +41,8 @@ public class BLEIntentReceiver extends BroadcastReceiver {
         manager.registerReceiver(this, filter);
     }
 
-    public static BLEIntentReceiver register(Context context, Callback callback) {
-        return new BLEIntentReceiver(context, callback);
+    public static BLEResultReceiver register(Context context, Callback callback) {
+        return new BLEResultReceiver(context, callback);
     }
 
     @Override
