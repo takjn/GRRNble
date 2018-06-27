@@ -254,15 +254,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void requestBluetoothFeature() {
-        if (mBluetoothAdapter.isEnabled()) {
-            return;
-        }
-
-        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(enableBtIntent, REQUEST_ENABLEBLUETOOTH);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -402,6 +393,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.hide(mFragmentDebug);
         fragmentTransaction.commit();
+    }
+
+    private void requestBluetoothFeature() {
+        if (mBluetoothAdapter.isEnabled()) {
+            return;
+        }
+
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableBtIntent, REQUEST_ENABLEBLUETOOTH);
     }
 
     /**
