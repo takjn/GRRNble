@@ -13,6 +13,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.UUID;
 
 public class BLEService extends Service {
@@ -103,6 +105,13 @@ public class BLEService extends Service {
 
             BLEResultReceiver.sendBroadcast(getApplicationContext(), BLEResultReceiver.ACTION_CHANGED, characteristic.getUuid().toString(), value);
         }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                timeSync(getApplicationContext());
+            }
+        }
     };
 
     @Override
@@ -157,6 +166,15 @@ public class BLEService extends Service {
         intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_PRIVATE_MESSAGE1_CHARACTERISTIC);
         intent.putExtra(BLECommandReceiver.EXTRA_MESSAGE, message);
         context.sendBroadcast(intent);
+    }
+
+    public static void timeSync(Context context) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yy,MM,dd,F,HH,mm");
+        Calendar cl = Calendar.getInstance();
+        String datetime = "DT," + sdf.format(cl.getTime());
+
+        Log.d(TAG, datetime);
+        BLEService.writeMessage(context, datetime);
     }
 
     public static void setBatteryNotify(Context context, boolean enable) {

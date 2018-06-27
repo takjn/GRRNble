@@ -33,10 +33,13 @@ public class NotificationService extends NotificationListenerService {
             case "com.android.settings":
             case "com.android.providers.downloads":
             case "com.android.vending":
+            case "com.google.android.apps.maps":
                 return;
             default:
                 break;
         }
+
+        Log.d(TAG, sbn.toString());
 
         String message = "";
         if (sbn.getNotification().category != null) {

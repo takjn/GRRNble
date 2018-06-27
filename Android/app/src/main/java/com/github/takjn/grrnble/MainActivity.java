@@ -289,13 +289,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return true;
         }
         if (id == R.id.action_timesync) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yy,MM,dd,F,HH,mm");
-            Calendar cl = Calendar.getInstance();
-            String datetime = "DT," + sdf.format(cl.getTime());
-
-            Log.d(TAG, datetime);
-            BLEService.writeMessage(this, datetime);
-
+            BLEService.timeSync(getApplicationContext());
             return true;
         }
         return super.onOptionsItemSelected(item);
