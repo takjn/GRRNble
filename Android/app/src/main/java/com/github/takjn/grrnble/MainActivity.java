@@ -12,10 +12,8 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.ParcelUuid;
@@ -202,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             if (uuid.equals(BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC)) {
                                 mFragmentDebug.setChara1(value);
 
-                            } else if (uuid.equals(BLEService.UUID_PRIVATE_CHARACTERISTIC)) {
+                            } else if (uuid.equals(BLEService.UUID_PRIVATE_MESSAGE1_CHARACTERISTIC)) {
                                 mFragmentDebug.setChara2(value);
                             }
                         }
@@ -296,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String datetime = "DT," + sdf.format(cl.getTime());
 
             Log.d(TAG, datetime);
-            BLEService.sendToWatch(this, datetime);
+            BLEService.writeMessage(this, datetime);
 
             return true;
         }

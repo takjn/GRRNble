@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.UUID;
 
@@ -27,7 +26,7 @@ public class BLEService extends Service {
     // Private Service
     public static final String UUID_PRIVATE_SERVICE = "3b382559-223f-48ca-81b4-e151598f661b";
     public static final String UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC = "db5445c4-4a70-4422-87af-81d35456beb5";
-    public static final String UUID_PRIVATE_CHARACTERISTIC = "b2332443-1dd3-407b-b3e6-5d349caf5368";
+    public static final String UUID_PRIVATE_MESSAGE1_CHARACTERISTIC = "b2332443-1dd3-407b-b3e6-5d349caf5368";
 
     // for Notification
     public static final String UUID_NOTIFY = "00002902-0000-1000-8000-00805f9b34fb";
@@ -69,9 +68,9 @@ public class BLEService extends Service {
                     value = String.valueOf(battery_level) + "%";
                     Log.d(TAG, "onCharacteristicRead:UUID_BATTERY_LEVEL_CHARACTERISTIC:" + value);
                     break;
-                case UUID_PRIVATE_CHARACTERISTIC:
+                case UUID_PRIVATE_MESSAGE1_CHARACTERISTIC:
                     value = characteristic.getStringValue(0);
-                    Log.d(TAG, "onCharacteristicRead:UUID_PRIVATE_CHARACTERISTIC:" + value);
+                    Log.d(TAG, "onCharacteristicRead:UUID_PRIVATE_MESSAGE1_CHARACTERISTIC:" + value);
                     break;
                 default:
                     Log.d(TAG, "onCharacteristicRead:" + characteristic.getUuid().toString().toLowerCase());
@@ -151,11 +150,11 @@ public class BLEService extends Service {
      * @param context Application context
      * @param message Message to send
      */
-    public static void sendToWatch(Context context, String message) {
+    public static void writeMessage(Context context, String message) {
         Intent intent = new Intent(context, BLEService.BLECommandReceiver.class);
         intent.setAction("WRITE");
         intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
-        intent.putExtra("characteristic", BLEService.UUID_PRIVATE_CHARACTERISTIC);
+        intent.putExtra("characteristic", BLEService.UUID_PRIVATE_MESSAGE1_CHARACTERISTIC);
         intent.putExtra("message", message);
         context.sendBroadcast(intent);
     }

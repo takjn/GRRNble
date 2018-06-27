@@ -54,7 +54,7 @@ public class NotificationService extends NotificationListenerService {
         message = leftB(message, 20);
 
         // send a explicit broadcast intent
-        BLEService.sendToWatch(getApplicationContext(), message);
+        BLEService.writeMessage(getApplicationContext(), message);
     }
 
     @Override

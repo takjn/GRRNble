@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 public class DebugFragment extends Fragment implements View.OnClickListener {
@@ -71,16 +70,16 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
             Intent intent = new Intent(getContext(), BLEService.BLECommandReceiver.class);
             intent.setAction("READ");
             intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
-            intent.putExtra("characteristic", BLEService.UUID_PRIVATE_CHARACTERISTIC);
+            intent.putExtra("characteristic", BLEService.UUID_PRIVATE_MESSAGE1_CHARACTERISTIC);
             getContext().sendBroadcast(intent);
             return;
         }
         if (mButtonWriteHello.getId() == v.getId()) {
-            BLEService.sendToWatch(getContext(), "Hello!");
+            BLEService.writeMessage(getContext(), "Hello!");
             return;
         }
         if (mButtonWriteWorld.getId() == v.getId()) {
-            BLEService.sendToWatch(getContext(), "World!");
+            BLEService.writeMessage(getContext(), "World!");
             return;
         }
     }
