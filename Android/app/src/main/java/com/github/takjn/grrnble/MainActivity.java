@@ -315,21 +315,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (mCheckBoxBatteryLevel.getId() == v.getId()) {
-            Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandReceiver.class);
-            intent.setAction("SET_NOTIFY");
-            intent.putExtra("service", BLEService.UUID_BATTERY_SERVICE);
-            intent.putExtra("characteristic", BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC);
-            intent.putExtra("enable", mCheckBoxBatteryLevel.isChecked());
-            sendBroadcast(intent);
+            BLEService.setBatteryNotify(getApplicationContext(), mCheckBoxBatteryLevel.isChecked());
             return;
         }
         if (mCheckBoxTemperature.getId() == v.getId()) {
-            Intent intent = new Intent(getApplicationContext(), BLEService.BLECommandReceiver.class);
-            intent.setAction("SET_NOTIFY");
-            intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
-            intent.putExtra("characteristic", BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC);
-            intent.putExtra("enable", mCheckBoxTemperature.isChecked());
-            sendBroadcast(intent);
+            BLEService.setTemperatureNotify(getApplicationContext(), mCheckBoxTemperature.isChecked());
             return;
         }
     }
@@ -345,6 +335,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         reconnect();
 
+        // Start BLE service
         Intent intent = new Intent(getApplication(), BLEService.class);
         intent.putExtra("device", mDevice);
         startService(intent);
@@ -368,15 +359,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * Disconnect from the device
      */
     private void disconnect() {
-        Intent intent = new Intent(getApplication(), BLEService.class);
-        stopService(intent);
-
         mButtonConnect.setEnabled(true);
         mButtonDisconnect.setEnabled(false);
         mCheckBoxBatteryLevel.setEnabled(false);
         mCheckBoxBatteryLevel.setChecked(false);
         mCheckBoxTemperature.setEnabled(false);
         mCheckBoxTemperature.setChecked(false);
+
+        // Stop BLE service
+        Intent intent = new Intent(getApplication(), BLEService.class);
+        stopService(intent);
     }
 
     private void showDebugFragment() {

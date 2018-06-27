@@ -59,19 +59,11 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (mButtonReadChara1.getId() == v.getId()) {
-            Intent intent = new Intent(getContext(), BLEService.BLECommandReceiver.class);
-            intent.setAction("READ");
-            intent.putExtra("service", BLEService.UUID_BATTERY_SERVICE);
-            intent.putExtra("characteristic", BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC);
-            getContext().sendBroadcast(intent);
+            BLEService.readBattery(getContext());
             return;
         }
         if (mButtonReadChara2.getId() == v.getId()) {
-            Intent intent = new Intent(getContext(), BLEService.BLECommandReceiver.class);
-            intent.setAction("READ");
-            intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
-            intent.putExtra("characteristic", BLEService.UUID_PRIVATE_MESSAGE1_CHARACTERISTIC);
-            getContext().sendBroadcast(intent);
+            BLEService.readMessage(getContext());
             return;
         }
         if (mButtonWriteHello.getId() == v.getId()) {
