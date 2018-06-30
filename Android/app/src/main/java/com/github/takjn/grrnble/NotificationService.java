@@ -31,10 +31,15 @@ public class NotificationService extends NotificationListenerService {
             case "com.google.android.googlequicksearchbox":
             case "com.kddi.android.cmail":
             case "com.android.settings":
+            case "com.android.providers.downloads":
+            case "com.android.vending":
+            case "com.google.android.apps.maps":
                 return;
             default:
                 break;
         }
+
+        Log.d(TAG, sbn.toString());
 
         String message = "";
         if (sbn.getNotification().category != null) {
@@ -52,7 +57,7 @@ public class NotificationService extends NotificationListenerService {
         message = leftB(message, 20);
 
         // send a explicit broadcast intent
-        BLEService.sendToWatch(getApplicationContext(), message);
+        BLEService.writeMessage(getApplicationContext(), message);
     }
 
     @Override

@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 public class DebugFragment extends Fragment implements View.OnClickListener {
@@ -20,8 +19,6 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
     private Button mButtonReadChara2;
     private Button mButtonWriteHello;
     private Button mButtonWriteWorld;
-
-    private DebugListener mDebugListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,38 +49,29 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
-        if (context instanceof DebugListener) {
-            mDebugListener = (DebugListener) context;
-        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mDebugListener = null;
     }
 
     @Override
     public void onClick(View v) {
-        if (mDebugListener == null) {
-            return;
-        }
-
         if (mButtonReadChara1.getId() == v.getId()) {
-            mDebugListener.onReadBatteryLevelCharacteristic();
+            BLEService.readBattery(getContext());
             return;
         }
         if (mButtonReadChara2.getId() == v.getId()) {
-            mDebugListener.onReadPrivateCharacteristic();
+            BLEService.readMessage(getContext());
             return;
         }
         if (mButtonWriteHello.getId() == v.getId()) {
-            mDebugListener.onWritePrivateCharacteristic("Hello");
+            BLEService.writeMessage(getContext(), "Hello!");
             return;
         }
         if (mButtonWriteWorld.getId() == v.getId()) {
-            mDebugListener.onWritePrivateCharacteristic("World");
+            BLEService.writeMessage(getContext(), "World!");
             return;
         }
     }
@@ -96,12 +84,4 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
         mTextViewReadChara2.setText(value);
     }
 
-    public interface DebugListener {
-        public void onReadBatteryLevelCharacteristic();
-
-        public void onReadPrivateCharacteristic();
-
-        public void onWritePrivateCharacteristic(String message);
-    }
-    
 }

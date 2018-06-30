@@ -12,8 +12,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.UUID;
 
 public class BLEService extends Service {
@@ -27,7 +28,7 @@ public class BLEService extends Service {
     // Private Service
     public static final String UUID_PRIVATE_SERVICE = "3b382559-223f-48ca-81b4-e151598f661b";
     public static final String UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC = "db5445c4-4a70-4422-87af-81d35456beb5";
-    public static final String UUID_PRIVATE_CHARACTERISTIC = "b2332443-1dd3-407b-b3e6-5d349caf5368";
+    public static final String UUID_PRIVATE_MESSAGE1_CHARACTERISTIC = "b2332443-1dd3-407b-b3e6-5d349caf5368";
 
     // for Notification
     public static final String UUID_NOTIFY = "00002902-0000-1000-8000-00805f9b34fb";
@@ -69,16 +70,16 @@ public class BLEService extends Service {
                     value = String.valueOf(battery_level) + "%";
                     Log.d(TAG, "onCharacteristicRead:UUID_BATTERY_LEVEL_CHARACTERISTIC:" + value);
                     break;
-                case UUID_PRIVATE_CHARACTERISTIC:
+                case UUID_PRIVATE_MESSAGE1_CHARACTERISTIC:
                     value = characteristic.getStringValue(0);
-                    Log.d(TAG, "onCharacteristicRead:UUID_PRIVATE_CHARACTERISTIC:" + value);
+                    Log.d(TAG, "onCharacteristicRead:UUID_PRIVATE_MESSAGE1_CHARACTERISTIC:" + value);
                     break;
                 default:
                     Log.d(TAG, "onCharacteristicRead:" + characteristic.getUuid().toString().toLowerCase());
                     break;
             }
 
-            sendBLEIntent("READ", characteristic.getUuid().toString(), value);
+            BLEResultReceiver.sendBroadcast(getApplicationContext(), BLEResultReceiver.ACTION_READ, characteristic.getUuid().toString(), value);
         }
 
         @Override
@@ -102,15 +103,14 @@ public class BLEService extends Service {
                     break;
             }
 
-            sendBLEIntent("CHANGED", characteristic.getUuid().toString(), value);
+            BLEResultReceiver.sendBroadcast(getApplicationContext(), BLEResultReceiver.ACTION_CHANGED, characteristic.getUuid().toString(), value);
         }
 
-        private void sendBLEIntent(String action, String uuid, String value) {
-            Intent intent = new Intent(getApplicationContext(), MainActivity.BLEIntentReceiver.class);
-            intent.setAction(action);
-            intent.putExtra("uuid", uuid);
-            intent.putExtra("value", value);
-            sendBroadcast(intent);
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                timeSync(getApplicationContext());
+            }
         }
     };
 
@@ -159,12 +159,63 @@ public class BLEService extends Service {
      * @param context Application context
      * @param message Message to send
      */
-    public static void sendToWatch(Context context, String message) {
-        Intent intent = new Intent(context, BLEService.BLECommandIntentReceiver.class);
-        intent.setAction("WRITE");
-        intent.putExtra("service", BLEService.UUID_PRIVATE_SERVICE);
-        intent.putExtra("characteristic", BLEService.UUID_PRIVATE_CHARACTERISTIC);
-        intent.putExtra("message", message);
+    public static void writeMessage(Context context, String message) {
+        Intent intent = new Intent(context, BLEService.BLECommandReceiver.class);
+        intent.setAction(BLECommandReceiver.ACTION_WRITE);
+        intent.putExtra(BLECommandReceiver.EXTRA_SERVICE, BLEService.UUID_PRIVATE_SERVICE);
+        intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_PRIVATE_MESSAGE1_CHARACTERISTIC);
+        intent.putExtra(BLECommandReceiver.EXTRA_MESSAGE, message);
+        context.sendBroadcast(intent);
+    }
+
+    public static void timeSync(Context context) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yy,MM,dd,F,HH,mm");
+        Calendar cl = Calendar.getInstance();
+        String datetime = "DT," + sdf.format(cl.getTime());
+
+        Log.d(TAG, datetime);
+        BLEService.writeMessage(context, datetime);
+    }
+
+    public static void setBatteryNotify(Context context, boolean enable) {
+        Intent intent = new Intent(context, BLECommandReceiver.class);
+        intent.setAction(BLECommandReceiver.ACTION_SET_NOTIFY);
+        intent.putExtra(BLECommandReceiver.EXTRA_SERVICE, BLEService.UUID_BATTERY_SERVICE);
+        intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC);
+        intent.putExtra(BLECommandReceiver.EXTRA_ENABLE, enable);
+        context.sendBroadcast(intent);
+    }
+
+    public static void setTemperatureNotify(Context context, boolean enable) {
+        Intent intent = new Intent(context, BLECommandReceiver.class);
+        intent.setAction(BLECommandReceiver.ACTION_SET_NOTIFY);
+        intent.putExtra(BLECommandReceiver.EXTRA_SERVICE, BLEService.UUID_PRIVATE_SERVICE);
+        intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC);
+        intent.putExtra(BLECommandReceiver.EXTRA_ENABLE, enable);
+        context.sendBroadcast(intent);
+    }
+
+    public static void readBattery(Context context) {
+        Intent intent = new Intent(context, BLECommandReceiver.class);
+        intent.setAction(BLECommandReceiver.ACTION_READ);
+        intent.putExtra(BLECommandReceiver.EXTRA_SERVICE, BLEService.UUID_BATTERY_SERVICE);
+        intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_BATTERY_LEVEL_CHARACTERISTIC);
+        context.sendBroadcast(intent);
+    }
+
+    public static void readTemperature(Context context) {
+        Intent intent = new Intent(context, BLECommandReceiver.class);
+        intent.setAction(BLECommandReceiver.ACTION_READ);
+        intent.putExtra(BLECommandReceiver.EXTRA_SERVICE, BLEService.UUID_PRIVATE_SERVICE);
+        intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC);
+        context.sendBroadcast(intent);
+    }
+
+    public static void readMessage(Context context) {
+        Intent intent = new Intent(context, BLECommandReceiver.class);
+        intent.setAction(BLECommandReceiver.ACTION_READ);
+        intent.putExtra(BLECommandReceiver.EXTRA_SERVICE, BLEService.UUID_PRIVATE_SERVICE);
+        intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_PRIVATE_MESSAGE1_CHARACTERISTIC);
         context.sendBroadcast(intent);
     }
 
@@ -172,17 +223,26 @@ public class BLEService extends Service {
      * BroadcastReceiver.
      * Receive a broadcast-intent and read characteristics.
      */
-    public static class BLECommandIntentReceiver extends BroadcastReceiver {
-        private static final String TAG = "BLECommandIntent";
+    public static class BLECommandReceiver extends BroadcastReceiver {
+        private static final String TAG = "BLECommandReceiver";
+
+        public static final String ACTION_READ = "com.github.takjn.grrnble.ACTION_READ";
+        public static final String ACTION_SET_NOTIFY = "com.github.takjn.grrnble.ACTION_SET_NOTIFY";
+        public static final String ACTION_WRITE = "com.github.takjn.grrnble.WRITE";
+
+        public static final String EXTRA_SERVICE = "service";
+        public static final String EXTRA_CHARACTERISTIC = "characteristic";
+        public static final String EXTRA_MESSAGE = "message";
+        public static final String EXTRA_ENABLE = "enable";
 
         @Override
         public void onReceive(Context context, Intent intent) {
 
             String action = intent.getAction();
-            UUID service = UUID.fromString(intent.getStringExtra("service"));
-            UUID characteristic = UUID.fromString(intent.getStringExtra("characteristic"));
-            String message = intent.getStringExtra("message");
-            Boolean enable = intent.getBooleanExtra("enable", true);
+            UUID service = UUID.fromString(intent.getStringExtra(EXTRA_SERVICE));
+            UUID characteristic = UUID.fromString(intent.getStringExtra(EXTRA_CHARACTERISTIC));
+            String message = intent.getStringExtra(EXTRA_MESSAGE);
+            Boolean enable = intent.getBooleanExtra(EXTRA_ENABLE, true);
 
             if (mBluetoothGatt == null || mBluetoothGatt.getService(service) == null) {
                 Log.e(TAG, "mBluetoothGatt or mBluetoothGatt.getService is null");
@@ -192,18 +252,18 @@ public class BLEService extends Service {
             BluetoothGattCharacteristic ble = mBluetoothGatt.getService(service).getCharacteristic(characteristic);
 
             switch (action) {
-                case "READ":
+                case ACTION_READ:
                     Log.d(TAG, "READ");
                     mBluetoothGatt.readCharacteristic(ble);
                     break;
-                case "SET_NOTIFY":
+                case ACTION_SET_NOTIFY:
                     Log.d(TAG, "SET_NOTIFY");
                     mBluetoothGatt.setCharacteristicNotification(ble, enable);
                     BluetoothGattDescriptor descriptor = ble.getDescriptor(UUID.fromString(UUID_NOTIFY));
                     descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                     mBluetoothGatt.writeDescriptor(descriptor);
                     break;
-                case "WRITE":
+                case ACTION_WRITE:
                     Log.d(TAG, "WRITE:" + message);
                     ble.setValue(message);
                     mBluetoothGatt.writeCharacteristic(ble);

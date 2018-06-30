@@ -40,7 +40,7 @@ public class PhoneCallReceiver extends BroadcastReceiver {
                         String message = "Call:" + callNumber;
                         Log.d(TAG, "CALL_STATE_RINGING : " + message);
 
-                        BLEService.sendToWatch(mContext.getApplicationContext(), message);
+                        BLEService.writeMessage(mContext.getApplicationContext(), message);
                     }
 
                     break;
