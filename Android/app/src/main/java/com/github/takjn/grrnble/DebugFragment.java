@@ -67,11 +67,11 @@ public class DebugFragment extends Fragment implements View.OnClickListener {
             return;
         }
         if (mButtonWriteHello.getId() == v.getId()) {
-            BLEService.writeMessage(getContext(), "Hello!");
+            BLEService.writeMessage(getContext(), "Hello, world.01234567890");
             return;
         }
         if (mButtonWriteWorld.getId() == v.getId()) {
-            BLEService.writeMessage(getContext(), "World!");
+            BLEService.writeMessage(getContext(), "あいうえおかきくけこさしすせそたちつてと");
             return;
         }
     }

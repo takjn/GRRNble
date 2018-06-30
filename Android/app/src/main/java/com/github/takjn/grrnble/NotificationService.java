@@ -54,7 +54,6 @@ public class NotificationService extends NotificationListenerService {
         if (message.length() < 1) {
             message = sbn.getPackageName();
         }
-        message = leftB(message, 20);
 
         // send a explicit broadcast intent
         BLEService.writeMessage(getApplicationContext(), message);
@@ -88,26 +87,4 @@ public class NotificationService extends NotificationListenerService {
 //    public void onNotificationRemoved(StatusBarNotification sbn) {
 //        Log.d(TAG, "onNotificationRemoved");
 //    }
-
-    private String leftB(String str, Integer len) {
-        StringBuffer sb = new StringBuffer();
-        int cnt = 0;
-
-        try {
-            for (int i = 0; i < str.length(); i++) {
-                String tmpStr = str.substring(i, i + 1);
-                byte[] b = tmpStr.getBytes("UTF-8");
-                if (cnt + b.length > len) {
-                    return sb.toString();
-                } else {
-                    sb.append(tmpStr);
-                    cnt += b.length;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return sb.toString();
-    }
-
 }
