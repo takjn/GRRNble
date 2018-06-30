@@ -29,6 +29,7 @@ void checkBLE() {
   String command = "";
   
   // trash garbage
+  delay(50);
   while(Serial1.available() > 0) {
     char c = Serial1.read();
     delay(5);
@@ -46,13 +47,12 @@ void checkBLE() {
     if (c == '\n') {
       if (last_command != command && !command.startsWith("AOK") && !command.startsWith("00")) {
         last_command = command;
-        
+
         // read extra message
         while(Serial1.available() > 0) {
           char c = Serial1.read();
           delay(5);
         }
-
         Serial1.println("SHR,001D");
         Serial1.flush();
         delay(10);
@@ -100,6 +100,7 @@ void checkNotification() {
     rtc_set_time(&datetime);
     
     has_notification = false;
+
     return;
   }
 }

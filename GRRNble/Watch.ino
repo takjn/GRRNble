@@ -45,9 +45,10 @@ void drawWatch(unsigned char key) {
   // draw notification
   oled.setCursor(0, 5);
   if (has_notification) {
-    char buf[21];
+    char buf[41];
     message.toCharArray(buf, sizeof(buf));
     oled.printMisakiUTF16(buf);
+    oled.printMisakiUTF16("…");
     
     if (beep_flag) {
       beep();
