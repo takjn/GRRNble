@@ -45,6 +45,7 @@ PC,DB5445C44A70442287AF81D35456BEB5,12,02
 // The property of this characteristic is 0x12 (readble and could notify) and has a maximum data size of 2 bytes.
 
 PC,B23324431DD3407BB3E65D349CAF5368,0A,14
+PC,E2B8D854BFA64E798A5326B07604597D,0A,14
 // Add private characteristic to current private service.
 // The property of this characteristic is 0x0A (readble and writable) and has a maximum data size of 20 bytes.
 
@@ -72,6 +73,7 @@ LSコマンドを実行すると、以下のようなサービス一覧が表示
   DB5445C44A70442287AF81D35456BEB5,0018,02,02
   DB5445C44A70442287AF81D35456BEB5,0019,10,02
   B23324431DD3407BB3E65D349CAF5368,001B,0A,14
+  E2B8D854BFA64E798A5326B07604597D,001D,0A,14
 END
 ```
 

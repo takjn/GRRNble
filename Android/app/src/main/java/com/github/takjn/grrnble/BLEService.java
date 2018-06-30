@@ -29,6 +29,7 @@ public class BLEService extends Service {
     public static final String UUID_PRIVATE_SERVICE = "3b382559-223f-48ca-81b4-e151598f661b";
     public static final String UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC = "db5445c4-4a70-4422-87af-81d35456beb5";
     public static final String UUID_PRIVATE_MESSAGE1_CHARACTERISTIC = "b2332443-1dd3-407b-b3e6-5d349caf5368";
+    public static final String UUID_PRIVATE_MESSAGE2_CHARACTERISTIC = "e2b8d854-bfa6-4e79-8a53-26b07604597d";
 
     // for Notification
     public static final String UUID_NOTIFY = "00002902-0000-1000-8000-00805f9b34fb";

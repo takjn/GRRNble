@@ -46,6 +46,24 @@ void checkBLE() {
     if (c == '\n') {
       if (last_command != command && !command.startsWith("AOK") && !command.startsWith("00")) {
         last_command = command;
+        
+        // read extra message
+        while(Serial1.available() > 0) {
+          char c = Serial1.read();
+          delay(5);
+        }
+
+        Serial1.println("SHR,001D");
+        Serial1.flush();
+        delay(10);
+        while(Serial1.available() > 0){
+          char c = Serial1.read();
+          if (c != '\r' && c != '\n') {
+            command += c;
+          }
+          delay(5);
+        }
+
         message = decodeValue(command);
 
         has_notification = true;
@@ -59,7 +77,9 @@ void checkBLE() {
       }
     }
     else {
-      command += c;
+      if (c != '\r') {
+        command += c;
+      }
     }
     
     delay(5);
