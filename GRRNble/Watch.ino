@@ -48,7 +48,6 @@ void drawWatch(unsigned char key) {
     char buf[41];
     message.toCharArray(buf, sizeof(buf));
     oled.printMisakiUTF16(buf);
-    oled.printMisakiUTF16("…");
     
     if (beep_flag) {
       beep();

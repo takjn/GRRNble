@@ -65,7 +65,10 @@ void checkBLE() {
         }
 
         message = decodeValue(command);
-
+#ifdef DEBUG
+  Serial.println(command);
+  Serial.println(message);
+#endif
         has_notification = true;
         beep_flag = true;
         last_millis = millis();
