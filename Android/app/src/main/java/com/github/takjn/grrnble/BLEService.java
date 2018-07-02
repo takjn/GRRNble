@@ -36,6 +36,7 @@ public class BLEService extends Service {
 
     public static BluetoothDevice mDevice;
     private static BluetoothGatt mBluetoothGatt = null;
+    private static String message1 = ""; // 長い文章を送信するときに利用
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
@@ -81,6 +82,30 @@ public class BLEService extends Service {
             }
 
             BLEResultReceiver.sendBroadcast(getApplicationContext(), BLEResultReceiver.ACTION_READ, characteristic.getUuid().toString(), value);
+        }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (BluetoothGatt.GATT_SUCCESS != status) {
+                return;
+            }
+
+            String value = "";
+
+            switch (characteristic.getUuid().toString().toLowerCase()) {
+                case UUID_PRIVATE_MESSAGE2_CHARACTERISTIC:
+                    value = characteristic.getStringValue(0);
+                    Log.d(TAG, "onCharacteristicWrite:UUID_PRIVATE_MESSAGE2_CHARACTERISTIC:" + value);
+
+                    BluetoothGattCharacteristic ble = mBluetoothGatt.getService(UUID.fromString(UUID_PRIVATE_SERVICE)).getCharacteristic(UUID.fromString(UUID_PRIVATE_MESSAGE1_CHARACTERISTIC));
+                    ble.setValue(message1);
+                    mBluetoothGatt.writeCharacteristic(ble);
+
+                    break;
+                default:
+                    Log.d(TAG, "onCharacteristicWrite:" + characteristic.getUuid().toString().toLowerCase());
+                    break;
+            }
         }
 
         @Override
@@ -161,11 +186,19 @@ public class BLEService extends Service {
      * @param message Message to send
      */
     public static void writeMessage(Context context, String message) {
+
+        message1 = leftB(message, 20);
+        String[] splitStrings = message.split(message1);
+
+        String message2 = " ";
+        if (splitStrings.length > 1) {
+            message2 = leftB(splitStrings[1], 20);
+        }
         Intent intent = new Intent(context, BLEService.BLECommandReceiver.class);
         intent.setAction(BLECommandReceiver.ACTION_WRITE);
         intent.putExtra(BLECommandReceiver.EXTRA_SERVICE, BLEService.UUID_PRIVATE_SERVICE);
-        intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_PRIVATE_MESSAGE1_CHARACTERISTIC);
-        intent.putExtra(BLECommandReceiver.EXTRA_MESSAGE, message);
+        intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_PRIVATE_MESSAGE2_CHARACTERISTIC);
+        intent.putExtra(BLECommandReceiver.EXTRA_MESSAGE, message2);
         context.sendBroadcast(intent);
     }
 
@@ -218,6 +251,27 @@ public class BLEService extends Service {
         intent.putExtra(BLECommandReceiver.EXTRA_SERVICE, BLEService.UUID_PRIVATE_SERVICE);
         intent.putExtra(BLECommandReceiver.EXTRA_CHARACTERISTIC, BLEService.UUID_PRIVATE_MESSAGE1_CHARACTERISTIC);
         context.sendBroadcast(intent);
+    }
+
+    private static String leftB(String str, Integer len) {
+        StringBuffer sb = new StringBuffer();
+        int cnt = 0;
+
+        try {
+            for (int i = 0; i < str.length(); i++) {
+                String tmpStr = str.substring(i, i + 1);
+                byte[] b = tmpStr.getBytes("UTF-8");
+                if (cnt + b.length > len) {
+                    return sb.toString();
+                } else {
+                    sb.append(tmpStr);
+                    cnt += b.length;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
     }
 
     /**
