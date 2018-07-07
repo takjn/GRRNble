@@ -79,7 +79,6 @@ void setup() {
   oled.clear();
 
   // setup voltage measurement
-  analogReference(INTERNAL);
   pinMode(VOLTAGE_OUT_PIN, OUTPUT);
   pinMode(VOLTAGE_CHK_PIN, INPUT);
   
