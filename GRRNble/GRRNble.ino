@@ -36,8 +36,8 @@ boolean wake_flag = false;
 boolean is_active = true;
 
 // settings for battery service
-#define MAX_VOLTAGE 3.3
-#define MAX_VOLTAGE_DROP 0.3
+#define MAX_VOLTAGE 3.7
+#define MAX_VOLTAGE_DROP 0.5
 int voltage = 0;
 
 // settings for temperature service
