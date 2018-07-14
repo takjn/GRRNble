@@ -6,8 +6,8 @@ android {
         applicationId "com.github.takjn.grrnble"
         minSdkVersion 23
         targetSdkVersion 26
-        versionCode 2
-        versionName "20180623"
+        versionCode 3
+        versionName "20180713"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
