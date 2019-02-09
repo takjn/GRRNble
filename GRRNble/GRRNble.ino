@@ -67,6 +67,10 @@ uint8_t mode_current = MODE_TIME;
 #define KEY_NEXT 2
 #define KEY_SELECT 3
 
+void wakeupInterrupt() {
+    if (is_active == false) wake_flag = true;
+}
+
 void setup() {
   // initialize RTC
   rtc_init();
@@ -105,6 +109,10 @@ void setup() {
   oled.ssd1306WriteCmd(0x00);  // 0xF1(default)
   oled.ssd1306WriteCmd(SSD1306_SETVCOMDETECT);
   oled.ssd1306WriteCmd(0x00);  // 0x00, 0x20, 0x30, 0x40 (default)
+
+  // wakeup interrupt
+  attachInterrupt(0, wakeupInterrupt, CHANGE);
+  attachInterrupt(1, wakeupInterrupt, CHANGE);
 }
 
 void sleep() {
@@ -142,6 +150,7 @@ void wakeup() {
   wake_flag = false;
   is_active = true;
   last_millis = millis();
+  mode_current = MODE_TIME;
 }
 
 void loop() {
@@ -171,15 +180,12 @@ void loop() {
         setOperationClockMode(CLK_LOW_SPEED_MODE);
         last_check_millis = millis();
       }
-
-      key = key_read(); 
     }
   }
 
   // turn display on if the display is off
   if (wake_flag == true) {
     wakeup();
-    key = KEY_NONE;
   }
   
   // check notification message
