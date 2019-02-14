@@ -1629,9 +1629,9 @@ Wire Wire Line
 	3400 5000 3600 5000
 Wire Wire Line
 	3450 5800 3600 5800
-Text GLabel 3450 5600 0    60   Input ~ 0
-WAKESW
 Text GLabel 3450 5700 0    60   Input ~ 0
+WAKESW
+Text GLabel 3450 5600 0    60   Input ~ 0
 WAKEHW
 Wire Wire Line
 	3450 5600 3600 5600
