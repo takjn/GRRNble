@@ -1,4 +1,4 @@
-update=2018年06月16日 23時59分49秒
+update=2019年02月14日 20時21分33秒
 version=1
 last_client=kicad
 [pcbnew]
@@ -25,44 +25,6 @@ version=1
 NetIExt=net
 [general]
 version=1
-[eeschema]
-version=1
-LibDir=library
-[eeschema/libraries]
-LibName1=power
-LibName2=device
-LibName3=switches
-LibName4=relays
-LibName5=motors
-LibName6=transistors
-LibName7=conn
-LibName8=linear
-LibName9=regul
-LibName10=74xx
-LibName11=cmos4000
-LibName12=adc-dac
-LibName13=memory
-LibName14=microcontrollers
-LibName15=dsp
-LibName16=analog_switches
-LibName17=motorola
-LibName18=audio
-LibName19=interface
-LibName20=digital-audio
-LibName21=philips
-LibName22=display
-LibName23=cypress
-LibName24=siliconi
-LibName25=opto
-LibName26=atmel
-LibName27=contrib
-LibName28=valves
-LibName29=library/renesas
-LibName30=library/JST-SH/JST-SH
-LibName31=library/SSD1306/SSD1306
-LibName32=library/misc/misc
-LibName33=library/RN4020
-LibName34=library/open-project/open-project
 [schematic_editor]
 version=1
 PageLayoutDescrFile=
@@ -73,3 +35,6 @@ NetFmtName=
 SpiceForceRefPrefix=0
 SpiceUseNetNumbers=0
 LabSize=60
+[eeschema]
+version=1
+LibDir=
