@@ -143,9 +143,6 @@ NoConn ~ 3600 5200
 NoConn ~ 3600 5300
 NoConn ~ 3600 5400
 NoConn ~ 3600 5500
-NoConn ~ 3600 5600
-NoConn ~ 3600 5700
-NoConn ~ 3600 6100
 NoConn ~ 3600 5900
 NoConn ~ 3600 6000
 NoConn ~ 7400 6100
@@ -609,18 +606,6 @@ D7/TXD
 NoConn ~ 5150 7400
 NoConn ~ 5150 7500
 NoConn ~ 5150 7700
-$Comp
-L power:GND #PWR019
-U 1 1 5B1FF555
-P 5550 8100
-F 0 "#PWR019" H 5550 7850 50  0001 C CNN
-F 1 "GND" H 5550 7950 50  0000 C CNN
-F 2 "" H 5550 8100 50  0001 C CNN
-F 3 "" H 5550 8100 50  0001 C CNN
-	1    5550 8100
-	1    0    0    -1  
-$EndComp
-NoConn ~ 5150 8200
 NoConn ~ 5150 8300
 NoConn ~ 5150 8400
 NoConn ~ 5150 8600
@@ -1130,13 +1115,6 @@ Wire Wire Line
 Wire Wire Line
 	5500 7300 5150 7300
 Wire Wire Line
-	5150 8000 5550 8000
-Wire Wire Line
-	5550 7900 5550 8000
-Wire Wire Line
-	5150 7900 5550 7900
-Connection ~ 5550 8000
-Wire Wire Line
 	3650 9600 3450 9600
 Wire Wire Line
 	3450 9300 3450 9400
@@ -1604,8 +1582,6 @@ Wire Wire Line
 Wire Wire Line
 	13950 1100 13950 900 
 Wire Wire Line
-	5550 8000 5550 8100
-Wire Wire Line
 	3450 9600 3450 9700
 Wire Wire Line
 	3450 9500 3450 9600
@@ -1653,4 +1629,28 @@ Wire Wire Line
 	3400 5000 3600 5000
 Wire Wire Line
 	3450 5800 3600 5800
+Text GLabel 3450 5600 0    60   Input ~ 0
+WAKESW
+Text GLabel 3450 5700 0    60   Input ~ 0
+WAKEHW
+Wire Wire Line
+	3450 5600 3600 5600
+Wire Wire Line
+	3600 5700 3450 5700
+Text GLabel 5500 7900 2    60   Input ~ 0
+WAKESW
+Text GLabel 5500 8000 2    60   Input ~ 0
+WAKEHW
+Wire Wire Line
+	5150 7900 5500 7900
+Wire Wire Line
+	5500 8000 5150 8000
+Text GLabel 3450 6100 0    60   Input ~ 0
+PIO1
+Wire Wire Line
+	3450 6100 3600 6100
+Text GLabel 5500 8200 2    60   Input ~ 0
+PIO1
+Wire Wire Line
+	5150 8200 5500 8200
 $EndSCHEMATC
