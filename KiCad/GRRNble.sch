@@ -390,9 +390,9 @@ Text GLabel 14300 5450 0    60   Input ~ 0
 SW2
 Text GLabel 14300 5700 0    60   Input ~ 0
 SW3
-Text GLabel 7900 5100 2    60   Input ~ 0
-SW1
 Text GLabel 7900 5300 2    60   Input ~ 0
+SW1
+Text GLabel 7900 5100 2    60   Input ~ 0
 SW2
 Text GLabel 7900 5400 2    60   Input ~ 0
 SW3
@@ -1472,13 +1472,13 @@ Wire Wire Line
 	7950 650  8050 650 
 Wire Wire Line
 	8050 650  8050 750 
-Text GLabel 3450 5800 0    60   Input ~ 0
+Text GLabel 3400 5000 0    60   Input ~ 0
 STAT
 Wire Wire Line
 	3100 950  3100 650 
 Text GLabel 3250 1150 0    60   Input ~ 0
 STAT
-Text GLabel 3400 5000 0    60   Input ~ 0
+Text GLabel 3450 5800 0    60   Input ~ 0
 VDD
 Wire Wire Line
 	3250 1150 3500 1150
