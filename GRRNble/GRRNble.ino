@@ -35,7 +35,6 @@ boolean display_always_on = true;
 // settings for power saving
 const unsigned long DELAY_SLEEPS[4] = {0, 20000, 10000, 5000};  // sleep (millisec, 0=always on)
 int delay_sleep = 3;
-boolean wake_flag = false;
 boolean is_active = true;
 
 // settings for battery service
@@ -69,7 +68,7 @@ uint8_t mode_current = MODE_TIME;
 #define KEY_SELECT 3
 
 void wakeupInterrupt() {
-  if (is_active == false) wake_flag = true;
+  is_active = true;
 }
 
 void notificationInterrupt() {
@@ -152,7 +151,6 @@ void wakeup() {
   }
   oled.clear();
   
-  wake_flag = false;
   is_active = true;
   last_millis = millis();
   mode_current = MODE_TIME;
@@ -164,7 +162,7 @@ void loop() {
   
   // stanby loop
   if (is_active == false) {
-    while(wake_flag == false) {
+    while(is_active == false) {
       notifyBLE();
       delay(500);
     }

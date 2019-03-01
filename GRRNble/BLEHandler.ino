@@ -117,6 +117,7 @@ boolean checkNotification() {
     datetime = {year, month, day, week, hour, minute, 00};
     rtc_set_time(&datetime);
     
+    message = "";
     return false;
   }
 
