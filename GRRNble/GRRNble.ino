@@ -172,7 +172,10 @@ void loop() {
   }
 
   // check buttons
-  key = key_read(); 
+  key = key_read();
+  if (key != KEY_NONE) {
+    last_millis = millis();
+  }
 
   // check BLE
   if (has_notice == true) {
@@ -183,6 +186,7 @@ void loop() {
     }
     setPowerManagementMode(PM_STOP_MODE);
     has_notice = false;
+    last_millis = millis();
   }
 
   // notify sensors status

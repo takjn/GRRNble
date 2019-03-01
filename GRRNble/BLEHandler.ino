@@ -73,7 +73,6 @@ boolean checkBLE() {
   Serial.println(message);
 #endif
         has_notification = true;
-        last_millis = millis();
 
         // wake up
         wakeupInterrupt();
