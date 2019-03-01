@@ -3,6 +3,14 @@ const char *MonthShortStr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"
 
 int last_second = 0;
 
+void drawSmallWatch() {
+  // update time
+  oled.setCursor(36, 4);
+  printWithZero(datetime.hour);
+  oled.print(':');
+  printWithZero(datetime.min);
+}
+
 void drawWatch(unsigned char key) {
   if (key == KEY_SELECT) {
     mode_current = MODE_MENU;

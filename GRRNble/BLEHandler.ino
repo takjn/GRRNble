@@ -17,17 +17,19 @@ void notifyBLE() {
   }
 }
 
-void drawSmallWatch() {
-  // update time
-  oled.setCursor(36, 4);
-  printWithZero(datetime.hour);
-  oled.print(':');
-  printWithZero(datetime.min);
+void sendToRN4020(String command) {
+  Serial1.println(command);
+  Serial1.flush();
+  delay(10);
 }
 
 void checkBLE() {
   String command = "";
-  
+
+  sendToRN4020("WP");             // Pause RN4020 script
+  sendToRN4020("SHW,001F,00");    // Reset characteristic value
+  sendToRN4020("|O,01,00");       // Reset pio0 value
+
   // trash garbage
   delay(50);
   while(Serial1.available() > 0) {
@@ -74,9 +76,7 @@ void checkBLE() {
         last_millis = millis();
 
         // wake up
-        if (!is_active) {
-          wake_flag = true;
-        }
+        wakeupInterrupt();
       }
     }
     else {
@@ -87,6 +87,8 @@ void checkBLE() {
     
     delay(5);
   }
+
+  sendToRN4020("WR");             // Run RN4020 script
 }
 
 void checkNotification() {

@@ -15,10 +15,13 @@ SSD1306AsciiWire oled;
 // settings for I/O pins
 #define BUZZER_PIN      10          // pin for buzzer
 #define KEY_PREV_PIN    9           // pin for previous button
-#define KEY_SELECT_PIN  5           // pin for select button
-#define KEY_NEXT_PIN    3           // pin for next button
+#define KEY_SELECT_PIN  3           // pin for select button
+#define KEY_NEXT_PIN    5           // pin for next button
 #define VOLTAGE_OUT_PIN A1          // pin for voltage measurement
 #define VOLTAGE_CHK_PIN A0          // pin for voltage measurement
+#define WAKEHW_PIN  11              // pin for RN4020 WAKEHW
+#define WAKESW_PIN  12              // pin for RN4020 WAKESW
+#define PIO1_PIN 2                  // pin for RN4020 PIO1
 
 // settings for buzzer
 const uint8_t BUZZER_VOLUMES[4] = { 0, 1, 5, 15 };  // 4 steps volume (0=silence)
@@ -34,6 +37,7 @@ const unsigned long DELAY_SLEEPS[4] = {0, 20000, 10000, 5000};  // sleep (millis
 int delay_sleep = 3;
 boolean wake_flag = false;
 boolean is_active = true;
+bool has_notice = false;
 
 // settings for battery service
 #define MAX_VOLTAGE 3.7
@@ -52,7 +56,6 @@ boolean beep_flag = false;
 String message = "";
 
 // variables for power saving
-unsigned long last_check_millis = 0;
 unsigned long last_millis = 0;
 
 // mode
@@ -68,7 +71,12 @@ uint8_t mode_current = MODE_TIME;
 #define KEY_SELECT 3
 
 void wakeupInterrupt() {
-    if (is_active == false) wake_flag = true;
+  if (is_active == false) wake_flag = true;
+}
+
+void notificationInterrupt() {
+  if (has_notice == false) has_notice = true;
+  wakeupInterrupt();
 }
 
 void setup() {
@@ -94,8 +102,13 @@ void setup() {
   pinMode(KEY_PREV_PIN, INPUT_PULLUP);
   pinMode(KEY_SELECT_PIN, INPUT_PULLUP);
   pinMode(KEY_NEXT_PIN, INPUT_PULLUP);
-  
+  pinMode(PIO1_PIN, INPUT);
+  pinMode(WAKESW_PIN, OUTPUT);
+  pinMode(WAKEHW_PIN, OUTPUT);
+
   // setup for RN4020
+  digitalWrite(WAKESW_PIN, LOW);
+  digitalWrite(WAKEHW_PIN, LOW);
 #ifdef DEBUG
   Serial.begin(115200);
 #endif
@@ -111,7 +124,7 @@ void setup() {
   oled.ssd1306WriteCmd(0x00);  // 0x00, 0x20, 0x30, 0x40 (default)
 
   // wakeup interrupt
-  attachInterrupt(0, wakeupInterrupt, CHANGE);
+  attachInterrupt(0, notificationInterrupt, RISING);
   attachInterrupt(1, wakeupInterrupt, CHANGE);
 }
 
@@ -129,15 +142,9 @@ void sleep() {
   }
 
   is_active = false;
-  setPowerManagementMode(PM_NORMAL_MODE);
-  setOperationClockMode(CLK_LOW_SPEED_MODE);
-  last_check_millis = millis();
 }
 
 void wakeup() {
-  setOperationClockMode(CLK_HIGH_SPEED_MODE);
-  setPowerManagementMode(PM_STOP_MODE);
-
   if (display_always_on == false) {
     // Enable charge pump
     oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
@@ -154,45 +161,35 @@ void wakeup() {
 }
 
 void loop() {
-  unsigned int span;
+  // unsigned int span;
   unsigned char key;
   
-  // check BLE
+  // check buttons
   if (is_active == true) {
-    span = millis() - last_check_millis;
-    if ( span > 5000 || span < 0) {
-      setPowerManagementMode(PM_NORMAL_MODE);
-      notifyBLE();
-      checkBLE();
-      setPowerManagementMode(PM_STOP_MODE);
-      last_check_millis = millis();
-    }
-    
     key = key_read(); 
   } else {
     // stanby loop
     while(wake_flag == false) {
-      span = millis() - last_check_millis;
-      if ( span > 1500 || span < 0) {
-        setOperationClockMode(CLK_HIGH_SPEED_MODE);
-        notifyBLE();
-        checkBLE();
-        setOperationClockMode(CLK_LOW_SPEED_MODE);
-        last_check_millis = millis();
-      }
+      notifyBLE();
+      delay(500);
+    }
+    wakeup();
+  }
+
+  // check BLE
+  if (has_notice == true) {
+    setPowerManagementMode(PM_NORMAL_MODE);
+    // notifyBLE();
+    checkBLE();
+    setPowerManagementMode(PM_STOP_MODE);
+    has_notice = false;
+
+    // check notification message
+    if (has_notification) {
+      checkNotification();
     }
   }
 
-  // turn display on if the display is off
-  if (wake_flag == true) {
-    wakeup();
-  }
-  
-  // check notification message
-  if (has_notification) {
-    checkNotification();
-  }
-  
   // draw screen
   if (mode_current == MODE_TIME) {
     drawWatch(key);
