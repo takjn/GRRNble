@@ -77,6 +77,17 @@ void notificationInterrupt() {
 }
 
 void setup() {
+  // initialize pins
+  pinMode(VOLTAGE_OUT_PIN, OUTPUT);
+  pinMode(VOLTAGE_CHK_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(KEY_PREV_PIN, INPUT_PULLUP);
+  pinMode(KEY_SELECT_PIN, INPUT_PULLUP);
+  pinMode(KEY_NEXT_PIN, INPUT_PULLUP);
+  pinMode(PIO1_PIN, INPUT);
+  pinMode(WAKESW_PIN, OUTPUT);
+  pinMode(WAKEHW_PIN, OUTPUT);
+
   // initialize RTC
   rtc_init();
   SUBCUD.subcud = 0xB8;  // http://japan.renesasrulz.com/gr_user_forum_japanese/f/gr-kurumi/631/gr-kurumi-rtc
@@ -86,36 +97,21 @@ void setup() {
   oled.begin(&Adafruit128x64, I2C_ADDRESS);
   oled.setContrast(DISPLAY_CONTRASTS[display_contrast]);
   oled.clear();
-
-  // setup voltage measurement
-  pinMode(VOLTAGE_OUT_PIN, OUTPUT);
-  pinMode(VOLTAGE_CHK_PIN, INPUT);
-  
-  // setup pins
-  pinMode(BUZZER_PIN, OUTPUT);
-  pinMode(KEY_PREV_PIN, INPUT_PULLUP);
-  pinMode(KEY_SELECT_PIN, INPUT_PULLUP);
-  pinMode(KEY_NEXT_PIN, INPUT_PULLUP);
-  pinMode(PIO1_PIN, INPUT);
-  pinMode(WAKESW_PIN, OUTPUT);
-  pinMode(WAKEHW_PIN, OUTPUT);
-
-  // setup for RN4020
-  digitalWrite(WAKESW_PIN, LOW);
-  digitalWrite(WAKEHW_PIN, LOW);
-#ifdef DEBUG
-  Serial.begin(115200);
-#endif
-  Serial1.begin(2400);
-
-  voltage = getVoltage();
-  last_millis = millis();
-  
-  // Set Pre-charge Period
+  // Set Pre-charge period for energy saving
   oled.ssd1306WriteCmd(SSD1306_SETPRECHARGE);
   oled.ssd1306WriteCmd(0x00);  // 0xF1(default)
   oled.ssd1306WriteCmd(SSD1306_SETVCOMDETECT);
   oled.ssd1306WriteCmd(0x00);  // 0x00, 0x20, 0x30, 0x40 (default)
+
+  // initialize RN4020
+  digitalWrite(WAKESW_PIN, LOW);
+  digitalWrite(WAKEHW_PIN, LOW);
+  Serial1.begin(2400);
+
+#ifdef DEBUG
+  // initialize debuging port
+  Serial.begin(115200);
+#endif
 
   // wakeup interrupt
   attachInterrupt(0, notificationInterrupt, RISING);
@@ -123,6 +119,7 @@ void setup() {
 
   // setup power management
   setPowerManagementMode(PM_STOP_MODE);
+  last_millis = millis();
 }
 
 void sleep() {
