@@ -128,11 +128,11 @@ void sleep() {
   if (display_always_on == true) {
     drawSmallWatch();
   } else {
+    // Set Display off
+    oled.ssd1306WriteCmd(0x0ae);
     // Disable charge pump
     oled.ssd1306WriteCmd(SSD1306_CHARGEPUMP);
     oled.ssd1306WriteCmd(0x10);
-    // Set Display off
-    oled.ssd1306WriteCmd(0x0ae);
   }
 
   is_active = false;
