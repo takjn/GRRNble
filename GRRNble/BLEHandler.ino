@@ -21,6 +21,13 @@ void sendToRN4020(String command) {
   Serial1.println(command);
   Serial1.flush();
   delay(10);
+#ifdef DEBUG
+  while(Serial1.available() > 0) {
+    char c = Serial1.read();
+    Serial.write(c);
+    delay(5);
+  }
+#endif
 }
 
 boolean checkBLE() {

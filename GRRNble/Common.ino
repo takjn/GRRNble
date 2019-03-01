@@ -73,7 +73,7 @@ static int getVoltage() {
   Serial.println(v);
  #endif
  
-  String s = "SHW,0020," + String(ret, HEX); 
+  String s = "SHW,0022," + String(ret, HEX); 
   Serial1.println(s);
   Serial1.flush();
 

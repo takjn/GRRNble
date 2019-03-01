@@ -92,9 +92,6 @@ void setup() {
   pinMode(VOLTAGE_OUT_PIN, OUTPUT);
   pinMode(VOLTAGE_CHK_PIN, INPUT);
   
-  // setup power management
-  setPowerManagementMode(PM_STOP_MODE);
-
   // setup pins
   pinMode(BUZZER_PIN, OUTPUT);
   pinMode(KEY_PREV_PIN, INPUT_PULLUP);
@@ -124,6 +121,9 @@ void setup() {
   // wakeup interrupt
   attachInterrupt(0, notificationInterrupt, RISING);
   attachInterrupt(1, wakeupInterrupt, CHANGE);
+
+  // setup power management
+  setPowerManagementMode(PM_STOP_MODE);
 }
 
 void sleep() {
