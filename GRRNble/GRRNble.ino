@@ -164,11 +164,8 @@ void loop() {
   // unsigned int span;
   unsigned char key;
   
-  // check buttons
-  if (is_active == true) {
-    key = key_read(); 
-  } else {
-    // stanby loop
+  // stanby loop
+  if (is_active == false) {
     while(wake_flag == false) {
       notifyBLE();
       delay(500);
@@ -176,19 +173,19 @@ void loop() {
     wakeup();
   }
 
+  // check buttons
+  key = key_read(); 
+
   // check BLE
   if (has_notice == true) {
     setPowerManagementMode(PM_NORMAL_MODE);
-    // notifyBLE();
     checkBLE();
     setPowerManagementMode(PM_STOP_MODE);
     has_notice = false;
-
-    // check notification message
-    if (has_notification) {
-      checkNotification();
-    }
   }
+
+  // notify sensors status
+  notifyBLE();
 
   // draw screen
   if (mode_current == MODE_TIME) {

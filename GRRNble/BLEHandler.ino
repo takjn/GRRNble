@@ -88,6 +88,11 @@ void checkBLE() {
     delay(5);
   }
 
+  // check notification message
+  if (has_notification) {
+    checkNotification();
+  }
+
   sendToRN4020("WR");             // Run RN4020 script
 }
 
