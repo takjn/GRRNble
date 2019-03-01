@@ -37,7 +37,6 @@ const unsigned long DELAY_SLEEPS[4] = {0, 20000, 10000, 5000};  // sleep (millis
 int delay_sleep = 3;
 boolean wake_flag = false;
 boolean is_active = true;
-bool has_notice = false;
 
 // settings for battery service
 #define MAX_VOLTAGE 3.7
@@ -51,9 +50,8 @@ double temperature = getTemperature(TEMP_MODE_CELSIUS);
 RTC_TIMETYPE datetime = {15, 12, 31, 2, 23, 59, 30};
 
 // variables for notification
-boolean has_notification = false;
-boolean beep_flag = false;
 String message = "";
+bool has_notice = false;
 
 // variables for power saving
 unsigned long last_millis = 0;
@@ -179,7 +177,10 @@ void loop() {
   // check BLE
   if (has_notice == true) {
     setPowerManagementMode(PM_NORMAL_MODE);
-    checkBLE();
+    boolean result = checkBLE();
+    if (result == true) {
+      alert();
+    }
     setPowerManagementMode(PM_STOP_MODE);
     has_notice = false;
   }

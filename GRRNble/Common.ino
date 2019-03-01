@@ -26,6 +26,14 @@ void beep(void) {
   }
 }
 
+void alert(void) {
+  beep();
+  delay(100);
+  beep();
+  delay(100);
+  beep();
+}
+
 void printWithCheckBoundry(int x, String str) {
   if (x>=0 && x < oled.displayWidth()) {
     oled.setCol(x);

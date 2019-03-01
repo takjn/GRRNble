@@ -17,8 +17,8 @@ void drawWatch(unsigned char key) {
     return;
   }
   
-  if (key == KEY_NEXT && has_notification) {
-    has_notification = false;
+  if (key == KEY_NEXT && message.length() > 0) {
+    message = "";
   }
   
   rtc_get_time(&datetime);
@@ -52,20 +52,10 @@ void drawWatch(unsigned char key) {
   
   // draw notification
   oled.setCursor(0, 5);
-  if (has_notification) {
+  if (message.length() > 0) {
     char buf[41];
     message.toCharArray(buf, sizeof(buf));
     oled.printMisakiUTF16(buf);
-    
-    if (beep_flag) {
-      beep();
-      delay(100);
-      beep();
-      delay(100);
-      beep();
-      
-      beep_flag = false;
-    }
   }
   oled.clearToEOL();
   

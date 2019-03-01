@@ -23,8 +23,9 @@ void sendToRN4020(String command) {
   delay(10);
 }
 
-void checkBLE() {
+boolean checkBLE() {
   String command = "";
+  boolean has_notification = false;
 
   sendToRN4020("WP");             // Pause RN4020 script
   sendToRN4020("SHW,001F,00");    // Reset characteristic value
@@ -72,7 +73,6 @@ void checkBLE() {
   Serial.println(message);
 #endif
         has_notification = true;
-        beep_flag = true;
         last_millis = millis();
 
         // wake up
@@ -90,13 +90,15 @@ void checkBLE() {
 
   // check notification message
   if (has_notification) {
-    checkNotification();
+    has_notification = checkNotification();
   }
 
   sendToRN4020("WR");             // Run RN4020 script
+
+  return has_notification;
 }
 
-void checkNotification() {
+boolean checkNotification() {
   if (message.startsWith("DT")) {
     // Time sync command
     short unsigned int year = message.substring(3, 5).toInt() + 2000;
@@ -109,10 +111,10 @@ void checkNotification() {
     datetime = {year, month, day, week, hour, minute, 00};
     rtc_set_time(&datetime);
     
-    has_notification = false;
-
-    return;
+    return false;
   }
+
+  return true;
 }
 
 static String decodeValue(String s) {
