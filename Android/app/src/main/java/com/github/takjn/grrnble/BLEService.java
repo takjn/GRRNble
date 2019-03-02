@@ -30,6 +30,7 @@ public class BLEService extends Service {
     public static final String UUID_PRIVATE_TEMPERATURE_CHARACTERISTIC = "db5445c4-4a70-4422-87af-81d35456beb5";
     public static final String UUID_PRIVATE_MESSAGE1_CHARACTERISTIC = "b2332443-1dd3-407b-b3e6-5d349caf5368";
     public static final String UUID_PRIVATE_MESSAGE2_CHARACTERISTIC = "e2b8d854-bfa6-4e79-8a53-26b07604597d";
+    public static final String UUID_PRIVATE_NOTIFY_CHARACTERISTIC = "4344eee2-c467-4318-bfab-7564815a5db8";
 
     // for Notification
     public static final String UUID_NOTIFY = "00002902-0000-1000-8000-00805f9b34fb";
@@ -91,16 +92,25 @@ public class BLEService extends Service {
             }
 
             String value = "";
+            BluetoothGattCharacteristic ble;
 
             switch (characteristic.getUuid().toString().toLowerCase()) {
                 case UUID_PRIVATE_MESSAGE2_CHARACTERISTIC:
                     value = characteristic.getStringValue(0);
                     Log.d(TAG, "onCharacteristicWrite:UUID_PRIVATE_MESSAGE2_CHARACTERISTIC:" + value);
 
-                    BluetoothGattCharacteristic ble = mBluetoothGatt.getService(UUID.fromString(UUID_PRIVATE_SERVICE)).getCharacteristic(UUID.fromString(UUID_PRIVATE_MESSAGE1_CHARACTERISTIC));
+                    ble = mBluetoothGatt.getService(UUID.fromString(UUID_PRIVATE_SERVICE)).getCharacteristic(UUID.fromString(UUID_PRIVATE_MESSAGE1_CHARACTERISTIC));
                     ble.setValue(message1);
                     mBluetoothGatt.writeCharacteristic(ble);
 
+                    break;
+                case UUID_PRIVATE_MESSAGE1_CHARACTERISTIC:
+                    value = characteristic.getStringValue(0);
+                    Log.d(TAG, "onCharacteristicWrite:UUID_PRIVATE_MESSAGE1_CHARACTERISTIC:" + value);
+
+                    ble = mBluetoothGatt.getService(UUID.fromString(UUID_PRIVATE_SERVICE)).getCharacteristic(UUID.fromString(UUID_PRIVATE_NOTIFY_CHARACTERISTIC));
+                    ble.setValue("1");
+                    mBluetoothGatt.writeCharacteristic(ble);
                     break;
                 default:
                     Log.d(TAG, "onCharacteristicWrite:" + characteristic.getUuid().toString().toLowerCase());
