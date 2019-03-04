@@ -5,7 +5,7 @@ EELAYER END
 $Descr A3 16535 11693
 encoding utf-8
 Sheet 1 1
-Title ""
+Title "GRRNble"
 Date ""
 Rev ""
 Comp ""
@@ -804,7 +804,7 @@ F 3 "" H 11800 1050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Text Notes 12550 10150 2    60   ~ 0
-TBD: 3.3v LDO
+ 
 $Comp
 L misc:NJM2865F33 U6
 U 1 1 5B20FC5D
