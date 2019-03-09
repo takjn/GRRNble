@@ -68,7 +68,15 @@ void drawWatch(unsigned char key) {
   oled.write('C');
   
   oled.setCursor(97, 7);
-  oled.print(voltage);
-  oled.write('%');
+  if (is_usb_connected == 1) {
+    if (is_charging == 1) {
+      oled.print("CHG");
+    } else {
+      oled.print("USB");
+    }
+  } else {
+    oled.print(voltage);
+    oled.write('%');
+  }
 }
 

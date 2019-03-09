@@ -22,6 +22,8 @@ SSD1306AsciiWire oled;
 #define WAKEHW_PIN  11              // pin for RN4020 WAKEHW
 #define WAKESW_PIN  12              // pin for RN4020 WAKESW
 #define PIO1_PIN 2                  // pin for RN4020 PIO1
+#define USB_STAT_PIN 13             // pin for USB status
+#define CHG_STAT_PIN 4              // pin for charging status
 
 // settings for buzzer
 const uint8_t BUZZER_VOLUMES[4] = { 0, 1, 5, 15 };  // 4 steps volume (0=silence)
@@ -41,6 +43,8 @@ boolean is_active = true;
 #define MAX_VOLTAGE 3.7
 #define MAX_VOLTAGE_DROP 0.5
 int voltage = 0;
+int is_usb_connected = 0;
+int is_charging = 0;
 
 // settings for temperature service
 double temperature = getTemperature(TEMP_MODE_CELSIUS);
@@ -87,6 +91,8 @@ void setup() {
   pinMode(PIO1_PIN, INPUT);
   pinMode(WAKESW_PIN, OUTPUT);
   pinMode(WAKEHW_PIN, OUTPUT);
+  pinMode(USB_STAT_PIN, INPUT);
+  pinMode(CHG_STAT_PIN, INPUT);
 
   // initialize RTC
   rtc_init();

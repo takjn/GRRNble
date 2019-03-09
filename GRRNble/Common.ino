@@ -53,25 +53,31 @@ static int getVoltage() {
   float v = 0.0;
   int ret = 0;
 
-  digitalWrite(VOLTAGE_OUT_PIN, 1);
-  
-  // 7K5:2K7で抵抗分圧した回路を前提にA/Dを実施。
-  int voltage = analogRead(VOLTAGE_CHK_PIN);
-
-  digitalWrite(VOLTAGE_OUT_PIN, 0);
-
-  v = ((float)voltage/1023) * 3.3 / 0.27;
-  ret = 100 - ( (MAX_VOLTAGE - v) / MAX_VOLTAGE_DROP * 100);
-  
-  if (ret > 99) {
+  is_usb_connected = digitalRead(USB_STAT_PIN);
+  if (is_usb_connected == 1) {
+    is_charging = digitalRead(CHG_STAT_PIN);
     ret = 99;
-  } else if (ret < 0) {
-    ret = 0;
+  } else {
+    digitalWrite(VOLTAGE_OUT_PIN, 1);
+    
+    // 7K5:2K7で抵抗分圧した回路を前提にA/Dを実施。
+    int voltage = analogRead(VOLTAGE_CHK_PIN);
+
+    digitalWrite(VOLTAGE_OUT_PIN, 0);
+
+    v = ((float)voltage/1023) * 3.3 / 0.27;
+    ret = 100 - ( (MAX_VOLTAGE - v) / MAX_VOLTAGE_DROP * 100);
+    
+    if (ret > 99) {
+      ret = 99;
+    } else if (ret < 0) {
+      ret = 0;
+    }
+    
+#ifdef DEBUG
+    Serial.println(v);
+#endif
   }
-  
- #ifdef DEBUG
-  Serial.println(v);
- #endif
  
   String s = "SHW,0022," + String(ret, HEX); 
   Serial1.println(s);
