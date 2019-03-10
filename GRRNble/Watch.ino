@@ -3,14 +3,22 @@ const char *MonthShortStr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"
 
 int last_second = 0;
 
+void drawSmallWatch() {
+  // update time
+  oled.setCursor(36, 4);
+  printWithZero(datetime.hour);
+  oled.print(':');
+  printWithZero(datetime.min);
+}
+
 void drawWatch(unsigned char key) {
   if (key == KEY_SELECT) {
     mode_current = MODE_MENU;
     return;
   }
   
-  if (key == KEY_NEXT && has_notification) {
-    has_notification = false;
+  if (key == KEY_NEXT && message.length() > 0) {
+    message = "";
   }
   
   rtc_get_time(&datetime);
@@ -44,20 +52,10 @@ void drawWatch(unsigned char key) {
   
   // draw notification
   oled.setCursor(0, 5);
-  if (has_notification) {
+  if (message.length() > 0) {
     char buf[41];
     message.toCharArray(buf, sizeof(buf));
     oled.printMisakiUTF16(buf);
-    
-    if (beep_flag) {
-      beep();
-      delay(100);
-      beep();
-      delay(100);
-      beep();
-      
-      beep_flag = false;
-    }
   }
   oled.clearToEOL();
   
@@ -70,7 +68,15 @@ void drawWatch(unsigned char key) {
   oled.write('C');
   
   oled.setCursor(97, 7);
-  oled.print(voltage);
-  oled.write('%');
+  if (is_usb_connected == 1) {
+    if (is_charging == 1) {
+      oled.print("CHG");
+    } else {
+      oled.print("USB");
+    }
+  } else {
+    oled.print(voltage);
+    oled.write('%');
+  }
 }
 

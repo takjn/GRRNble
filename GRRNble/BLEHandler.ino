@@ -1,4 +1,3 @@
-String last_command = "";
 unsigned int last_minute = 99;
 
 void notifyBLE() {
@@ -17,17 +16,27 @@ void notifyBLE() {
   }
 }
 
-void drawSmallWatch() {
-  // update time
-  oled.setCursor(36, 4);
-  printWithZero(datetime.hour);
-  oled.print(':');
-  printWithZero(datetime.min);
+void sendToRN4020(String command) {
+  Serial1.println(command);
+  Serial1.flush();
+  delay(10);
+#ifdef DEBUG
+  while(Serial1.available() > 0) {
+    char c = Serial1.read();
+    Serial.write(c);
+    delay(5);
+  }
+#endif
 }
 
-void checkBLE() {
+boolean checkBLE() {
   String command = "";
-  
+  boolean has_notification = false;
+
+  sendToRN4020("WP");             // Pause RN4020 script
+  sendToRN4020("SHW,001F,00");    // Reset characteristic value
+  sendToRN4020("|O,01,00");       // Reset pio0 value
+
   // trash garbage
   delay(50);
   while(Serial1.available() > 0) {
@@ -45,9 +54,7 @@ void checkBLE() {
     char c = Serial1.read();
     
     if (c == '\n') {
-      if (last_command != command && !command.startsWith("AOK") && !command.startsWith("00")) {
-        last_command = command;
-
+      if (!command.startsWith("AOK") && !command.startsWith("00")) {
         // read extra message
         while(Serial1.available() > 0) {
           char c = Serial1.read();
@@ -70,13 +77,9 @@ void checkBLE() {
   Serial.println(message);
 #endif
         has_notification = true;
-        beep_flag = true;
-        last_millis = millis();
 
         // wake up
-        if (!is_active) {
-          wake_flag = true;
-        }
+        wakeupInterrupt();
       }
     }
     else {
@@ -87,9 +90,18 @@ void checkBLE() {
     
     delay(5);
   }
+
+  // check notification message
+  if (has_notification) {
+    has_notification = checkNotification();
+  }
+
+  sendToRN4020("WR");             // Run RN4020 script
+
+  return has_notification;
 }
 
-void checkNotification() {
+boolean checkNotification() {
   if (message.startsWith("DT")) {
     // Time sync command
     short unsigned int year = message.substring(3, 5).toInt() + 2000;
@@ -102,10 +114,11 @@ void checkNotification() {
     datetime = {year, month, day, week, hour, minute, 00};
     rtc_set_time(&datetime);
     
-    has_notification = false;
-
-    return;
+    message = "";
+    return false;
   }
+
+  return true;
 }
 
 static String decodeValue(String s) {
