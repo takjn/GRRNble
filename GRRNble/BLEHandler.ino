@@ -1,4 +1,3 @@
-String last_command = "";
 unsigned int last_minute = 99;
 
 void notifyBLE() {
@@ -55,9 +54,7 @@ boolean checkBLE() {
     char c = Serial1.read();
     
     if (c == '\n') {
-      if (last_command != command && !command.startsWith("AOK") && !command.startsWith("00")) {
-        last_command = command;
-
+      if (!command.startsWith("AOK") && !command.startsWith("00")) {
         // read extra message
         while(Serial1.available() > 0) {
           char c = Serial1.read();

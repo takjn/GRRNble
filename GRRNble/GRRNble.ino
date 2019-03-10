@@ -35,7 +35,7 @@ int display_contrast = 3;
 boolean display_always_on = true;
 
 // settings for power saving
-const unsigned long DELAY_SLEEPS[4] = {0, 20000, 10000, 5000};  // sleep (millisec, 0=always on)
+const unsigned long DELAY_SLEEPS[4] = {0, 10000, 5000, 3000};  // sleep (millisec, 0=always on)
 int delay_sleep = 3;
 boolean is_active = true;
 
