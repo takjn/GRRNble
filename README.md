@@ -69,6 +69,7 @@ RN4020 can be setup with a special program and serial monitor.
 Open RN4020Setup folder with [IDE for GR](http://gadget.renesas.com/en/product/ide4gr.html).
 Connect your board and select GR-Cotton from "Tools" -> "Board" in the menu.
 Compile the program and upload it to the board.
+
 After uploading the sketch, select the port from "Tools" -> "Serial Port" in the menu and open Serial monitor.
 
 ### Smartwatch app
@@ -80,6 +81,7 @@ Compile the program and upload it to the board.
 ### Android companion app
 
 You need to have a development environment with Android Studio to build the Android App in the Android folder.
+
 If you don't want to build from source files, you can install the compiled app from [Google Play](https://play.google.com/store/apps/details?id=com.github.takjn.grrnble).
 
 ## References
