@@ -62,7 +62,8 @@ void setupRN4020() {
   sendToRN4020("SB,0");            // Set 2400bps
 
   sendToRN4020("SS,C0000001");     // Enable device information, battery, private service
-  // sendToRN4020("SR,24002000");     // Set the device as periferal (Auto Advertise, No Direct Advertisement)
+  sendToRN4020("SR,25002000");     // Set the device as periferal (Auto Advertise, No Direct Advertisement, Run script after power on)
+  sendToRN4020("ST,0010,0004,0258");    // Set interval, latency and timeout
   sendToRN4020("PZ");              // Clear the current private service and characteristics
 
   // Set private service UUID
@@ -89,9 +90,7 @@ void setupRN4020() {
   // send the “ESC” key to exit from script input mode.
   Serial1.write(0x1b);
   Serial1.flush();
-  delay(1000);
 
-  sendToRN4020("SR,25002000");     // Set the device as periferal (Auto Advertise, No Direct Advertisement, Run script after power on)
   sendToRN4020("R,1");             // Reboot RN4020 to make the changes effective
 
   Serial1.begin(2400);
