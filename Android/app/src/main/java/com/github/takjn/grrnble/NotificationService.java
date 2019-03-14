@@ -34,6 +34,7 @@ public class NotificationService extends NotificationListenerService {
             case "com.android.providers.downloads":
             case "com.android.vending":
             case "com.google.android.apps.maps":
+            case "com.spotify.music":
                 return;
             default:
                 break;
@@ -42,12 +43,12 @@ public class NotificationService extends NotificationListenerService {
         Log.d(TAG, sbn.toString());
 
         String message = "";
-        if (sbn.getNotification().category != null) {
-            message = sbn.getNotification().category;
-            if (message.length() > 1) {
-                message = message.substring(0, 1).toUpperCase() + message.substring(1) + ":";
-            }
-        }
+//        if (sbn.getNotification().category != null) {
+//            message = sbn.getNotification().category;
+//            if (message.length() > 1) {
+//                message = message.substring(0, 1).toUpperCase() + message.substring(1) + ":";
+//            }
+//        }
         if (sbn.getNotification().tickerText != null) {
             message = message + sbn.getNotification().tickerText;
         }
