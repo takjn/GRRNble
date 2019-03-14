@@ -63,6 +63,7 @@ unsigned long last_millis = 0;
 #define MODE_TIME 0        // Watch
 #define MODE_MENU 1        // Menu
 #define MODE_SETTIME 2     // Set Date & Time
+#define MODE_GAME 3        // Game
 uint8_t mode_current = MODE_TIME;
 
 // key code
@@ -200,6 +201,11 @@ void loop() {
     drawMenu(key);
   } else if (mode_current == MODE_SETTIME) {
     drawSetTime(key);
+  } else if (mode_current == MODE_GAME) {
+    startGame();
+    oled.clear();
+    mode_current = MODE_TIME;
+    last_millis = millis();
   }
 
   // delay  

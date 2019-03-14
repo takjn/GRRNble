@@ -6,9 +6,9 @@ boolean changed = false;
 #define MARGIN_X 54
 #define ANIMATION_STEPS 9
 
-#define MENU_COUNT 6
+#define MENU_COUNT 7
 #define MENU_TITLE "Setup"
-const char *MENU_SUB_TITLE[MENU_COUNT] = {"BACK", "CONTRAST", "SOUND", "POWER SAVING", "ALWAYS ON", "DATE & TIME"};
+const char *MENU_SUB_TITLE[MENU_COUNT] = {"BACK", "CONTRAST", "SOUND", "POWER SAVING", "ALWAYS ON", "DATE & TIME", "GAME"};
 
 void drawMenu(unsigned char key) {
   // return if idle
@@ -45,6 +45,12 @@ void drawMenu(unsigned char key) {
       oled.clear();
       mode_current = MODE_SETTIME;
       rtc_get_time(&datetime);
+      return;
+    } else if (cursol == 6) {
+      // GAME
+      prev_cursol = -1;
+      oled.clear();
+      mode_current = MODE_GAME;
       return;
     }
   }
@@ -133,7 +139,7 @@ void drawMenuSub(int x) {
   printWithCheckBoundry(x + MARGIN_X * 3, "~");
   printWithCheckBoundry(x + MARGIN_X * 4, dao);
   printWithCheckBoundry(x + MARGIN_X * 5, "@");
-
+  printWithCheckBoundry(x + MARGIN_X * 6, "G");
 }
 
 
