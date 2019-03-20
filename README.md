@@ -93,10 +93,16 @@ If you don't want to build from source files, you can install the compiled app f
 - [Gadget Renesas](http://gadget.renesas.com/en/)
 - [GR-COTTON schematic diagram](http://gadget.renesas.com/ja/product/documents/gr-cotton_sch.pdf)
 - [RN4020 Bluetooth® Low Energy Module User’s Guide](http://ww1.microchip.com/downloads/en/devicedoc/70005191b.pdf)
+- [MCP1703A](http://akizukidenshi.com/download/ds/microchip/mcp1703a.pdf)
+- [Designing A Li-Ion Battery Charger and Load Sharing System With
+Microchip’s Stand-Alone Li-Ion Battery Charge Management Controller](http://ww1.microchip.com/downloads/en/appnotes/01149c.pdf)
+- [OLED Display and Arduino With Power-Save Mode](https://bengoncalves.wordpress.com/2015/10/01/oled-display-and-arduino-with-power-save-mode/)
 
-### Useful information (JP)
+### Useful information (JA)
 - [Gadget Renesas](http://gadget.renesas.com/jp/)
 - [GR-COTTON回路図](http://gadget.renesas.com/ja/product/documents/gr-cotton_sch.pdf)
 - [RN4020 Bluetooth® Low Energy モジュールユーザガイド](http://akizukidenshi.com/download/ds/microchip/70005191A_JP.pdf)
+- [MCP1703A](http://akizukidenshi.com/download/ds/microchip/mcp1703a.pdf)
+- [マイクロチップのスタンドアロンリチウムイオンバッテリ充電管理コントローラを使用したリチウムイオンバッテリ充電回路および負荷分担システムの設計](http://ww1.microchip.com/downloads/en/AppNotes/DS01149C_JP_battery.pdf)
 - [BLE通信ソフトを作る ( Android Studio 2.3.3 + RN4020 )](http://www.hiramine.com/programming/blecommunicator/index.html)
 - [KiCadで雑に基板を作る チュートリアル](https://www.slideshare.net/soburi/kicad-53622272)
