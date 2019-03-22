@@ -97,7 +97,6 @@ If you don't want to build from source files, you can install the compiled app f
 - [MCP1703A](http://akizukidenshi.com/download/ds/microchip/mcp1703a.pdf)
 - [Designing A Li-Ion Battery Charger and Load Sharing System With
 Microchip’s Stand-Alone Li-Ion Battery Charge Management Controller](http://ww1.microchip.com/downloads/en/appnotes/01149c.pdf)
-- [OLED Display and Arduino With Power-Save Mode](https://bengoncalves.wordpress.com/2015/10/01/oled-display-and-arduino-with-power-save-mode/)
 
 ### Useful information (JA)
 - [Gadget Renesas](http://gadget.renesas.com/jp/)
