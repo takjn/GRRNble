@@ -8,8 +8,10 @@ void notifyBLE() {
   last_minute = datetime.min;
   
   // update battery level and temperature
+  Serial1.begin(2400);
   voltage = getVoltage();
   temperature = getAvgTempareture();
+  Serial1.end();
 
   if (is_active == false && display_always_on == true) {
     drawSmallWatch();
@@ -32,6 +34,8 @@ void sendToRN4020(String command) {
 boolean checkBLE() {
   String command = "";
   boolean has_notification = false;
+
+  Serial1.begin(2400);
 
   sendToRN4020("WP");             // Pause RN4020 script
   sendToRN4020("SHW,001F,00");    // Reset characteristic value
@@ -97,6 +101,8 @@ boolean checkBLE() {
   }
 
   sendToRN4020("WR");             // Run RN4020 script
+
+  Serial1.end();
 
   return has_notification;
 }

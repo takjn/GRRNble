@@ -113,7 +113,6 @@ void setup() {
   // initialize RN4020
   digitalWrite(WAKESW_PIN, LOW);
   digitalWrite(WAKEHW_PIN, LOW);
-  Serial1.begin(2400);
 
 #ifdef DEBUG
   // initialize debuging port
