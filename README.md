@@ -97,6 +97,7 @@ If you don't want to build from source files, you can install the compiled app f
 ### Useful information (JP)
 - [Gadget Renesas](http://gadget.renesas.com/jp/)
 - [GR-COTTON回路図](http://gadget.renesas.com/ja/product/documents/gr-cotton_sch.pdf)
+- [RL78/G13 低消費電力動作編](https://www.renesas.com/jp/ja/doc/products/mpumcu/apn/rl78/001/r01an0465jj0210_rl78.pdf)
 - [RN4020 Bluetooth® Low Energy モジュールユーザガイド](http://akizukidenshi.com/download/ds/microchip/70005191A_JP.pdf)
 - [BLE通信ソフトを作る ( Android Studio 2.3.3 + RN4020 )](http://www.hiramine.com/programming/blecommunicator/index.html)
 - [KiCadで雑に基板を作る チュートリアル](https://www.slideshare.net/soburi/kicad-53622272)

@@ -61,7 +61,7 @@ static int getVoltage() {
     digitalWrite(VOLTAGE_OUT_PIN, 1);
     
     // 7K5:2K7で抵抗分圧した回路を前提にA/Dを実施。
-    int voltage = analogRead(VOLTAGE_CHK_PIN);
+    int voltage = analogReadWithClockControl(VOLTAGE_CHK_PIN);
 
     digitalWrite(VOLTAGE_OUT_PIN, 0);
 
@@ -86,8 +86,28 @@ static int getVoltage() {
   return ret;
 }
 
+int analogReadWithClockControl(uint8_t pin) {
+  SBI2(SFR2_PER0, SFR2_BIT_ADCEN);  // enable A/D converter
+  int result = analogRead(pin);
+  CBI2(SFR2_PER0, SFR2_BIT_ADCEN);  // disable A/D converter
+
+  return result;
+}
+
+int getTemperatureWithClockControl(uint8_t u8Mode) {
+  SBI2(SFR2_PER0, SFR2_BIT_ADCEN);  // enable A/D converter
+  int result = getTemperature(u8Mode);
+  CBI2(SFR2_PER0, SFR2_BIT_ADCEN);  // disable A/D converter
+
+  // CBI2(SFR2_PER0, SFR2_BIT_IICA0EN);
+  // CBI2(SFR2_PER0, SFR2_BIT_IICA1EN);
+  // CBI2(SFR2_PER0, SFR2_BIT_SAU0EN);
+  // CBI2(SFR2_PER0, SFR2_BIT_SAU1EN);
+  return result;
+}
+
 static double getAvgTempareture() {
-  double ret = temperature * 0.95 + getTemperature(TEMP_MODE_CELSIUS) * 0.05;
+  double ret = temperature * 0.95 + getTemperatureWithClockControl(TEMP_MODE_CELSIUS) * 0.05;
   int t = (int)ret;
   
   String s = "SHW,0018," + String(t, HEX); 

@@ -47,7 +47,7 @@ int is_usb_connected = 0;
 int is_charging = 0;
 
 // settings for temperature service
-double temperature = getTemperature(TEMP_MODE_CELSIUS);
+double temperature = getTemperatureWithClockControl(TEMP_MODE_CELSIUS);
 
 // variables for watch
 RTC_TIMETYPE datetime = {15, 12, 31, 2, 23, 59, 30};
@@ -161,7 +161,6 @@ void wakeup() {
 }
 
 void loop() {
-  // unsigned int span;
   unsigned char key;
   
   // stanby loop

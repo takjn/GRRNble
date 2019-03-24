@@ -25,7 +25,7 @@ void startGame(void) {
   // setup
   oled.set1X();
   oled.setFont(BM_tube9x8);
-  randomSeed(analogRead(5));
+  randomSeed(analogReadWithClockControl(5));
 
   // start new game
   newGame();
