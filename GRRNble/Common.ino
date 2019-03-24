@@ -80,8 +80,7 @@ static int getVoltage() {
   }
  
   String s = "SHW,0022," + String(ret, HEX); 
-  Serial1.println(s);
-  Serial1.flush();
+  sendToRN4020(s);
 
   return ret;
 }
@@ -99,10 +98,6 @@ int getTemperatureWithClockControl(uint8_t u8Mode) {
   int result = getTemperature(u8Mode);
   CBI2(SFR2_PER0, SFR2_BIT_ADCEN);  // disable A/D converter
 
-  // CBI2(SFR2_PER0, SFR2_BIT_IICA0EN);
-  // CBI2(SFR2_PER0, SFR2_BIT_IICA1EN);
-  // CBI2(SFR2_PER0, SFR2_BIT_SAU0EN);
-  // CBI2(SFR2_PER0, SFR2_BIT_SAU1EN);
   return result;
 }
 
@@ -111,8 +106,7 @@ static double getAvgTempareture() {
   int t = (int)ret;
   
   String s = "SHW,0018," + String(t, HEX); 
-  Serial1.println(s);
-  Serial1.flush();
+  sendToRN4020(s);
 
   return ret;  
 }
