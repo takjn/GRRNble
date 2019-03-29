@@ -27,6 +27,7 @@ There is a KiCad project file in KiCad folder. Also, you can see the schematic p
 
 ### Parts list
 All capacitors and resistors are 0805 (2012) SMD.
+
 | Reference(s) | Value | Qty | Note |
 |:---|:---|:---|:---|
 |C1|0.47uF|1|I used 1.0uF insted.|
