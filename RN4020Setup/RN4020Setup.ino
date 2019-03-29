@@ -10,7 +10,7 @@
 #include <Arduino.h>
 
 // pin assignments
-#define KEY_PREV_PIN    9           // pin for previous button
+#define KEY_PREV_PIN    10          // pin for previous button
 #define KEY_SELECT_PIN  3           // pin for select button
 #define KEY_NEXT_PIN    5           // pin for next button
 #define WAKEHW_PIN  11              // pin for RN4020 WAKEHW
