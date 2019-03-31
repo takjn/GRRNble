@@ -4,6 +4,8 @@ const char *MonthShortStr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"
 int last_second = 0;
 
 void drawSmallWatch() {
+  rtc_get_time(&datetime);
+
   // update time
   oled.setCursor(36, 4);
   printWithZero(datetime.hour);

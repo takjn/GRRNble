@@ -1,21 +1,9 @@
-unsigned int last_minute = 99;
-
 void notifyBLE() {
-  rtc_get_time(&datetime);
-  if (datetime.min == last_minute) {
-    return;
-  }
-  last_minute = datetime.min;
-  
   // update battery level and temperature
   Serial1.begin(2400);
   voltage = getVoltage();
   temperature = getAvgTempareture();
   Serial1.end();
-
-  if (is_active == false && display_always_on == true) {
-    drawSmallWatch();
-  }
 }
 
 void sendToRN4020(String command) {

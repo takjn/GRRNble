@@ -126,6 +126,16 @@ void setup() {
   // setup power management
   setPowerManagementMode(PM_STOP_MODE);
   last_millis = millis();
+
+  // notify sensors status
+  rtc_attach_constant_period_interrupt_handler(periodInterrupt);
+  rtc_set_constant_period_interrupt_time(RTC_CONSTANT_PERIOD_TIME_1MINUTE);
+  rtc_constant_period_interrupt_on();  
+}
+
+boolean period_interrupt_flag = true;
+void periodInterrupt() {
+  period_interrupt_flag = true;
 }
 
 void sleep() {
@@ -165,8 +175,15 @@ void loop() {
   // stanby loop
   if (is_active == false) {
     while(is_active == false) {
-      notifyBLE();
-      delay(500);
+      if (period_interrupt_flag) {
+        notifyBLE();
+        period_interrupt_flag = false;
+
+        if (display_always_on == true) {
+          drawSmallWatch();
+        }
+      }
+      _STOP();
     }
     wakeup();
   }
@@ -190,7 +207,10 @@ void loop() {
   }
 
   // notify sensors status
-  notifyBLE();
+  if (period_interrupt_flag) {
+    notifyBLE();
+    period_interrupt_flag = false;
+  }
 
   // draw screen
   if (mode_current == MODE_TIME) {
