@@ -12,7 +12,7 @@ void drawSmallWatch() {
 }
 
 void drawWatch(unsigned char key) {
-  if (key == KEY_SELECT) {
+  if (key == KEY_PREV) {
     mode_current = MODE_MENU;
     return;
   }
